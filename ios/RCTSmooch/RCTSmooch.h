@@ -8,5 +8,17 @@
 #import <React/RCTUtils.h>
 #endif
 
+#import <Foundation/Foundation.h>
+#import <Smooch/SKTConversation.h>
+
 @interface SmoochManager : NSObject <RCTBridgeModule>
+@end
+
+@interface MyConversationDelegate : NSObject <SKTConversationDelegate> {
+    NSDictionary *metadata;
+    NSString *someProperty;
+    NSString *conversationTitle;
+    NSString *conversationDescription;
+}
+@property (nonatomic, retain) NSString *someProperty;
 @end

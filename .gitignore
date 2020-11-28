@@ -7,3 +7,4 @@ android/gradlew
 android/gradlew.bat
 android/local.properties
 node_modules
+.idea

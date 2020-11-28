@@ -20,12 +20,11 @@ buildscript {
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.2"
+    compileSdkVersion 29
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 26
+        targetSdkVersion 29
         versionCode 1
         versionName "1.0"
     }
@@ -40,6 +39,7 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.facebook.react:react-native:+'
-    compile 'io.smooch:core:5.+'
-    compile 'io.smooch:ui:5.+'
+    compile 'io.smooch:core:8.+'
+    compile 'io.smooch:ui:8.+'
+    compile "com.android.support:appcompat-v7:28.0.0"
 }
