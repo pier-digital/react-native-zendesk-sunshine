@@ -329,9 +329,8 @@ RCT_EXPORT_METHOD(updateConversation:(NSString *)title description:(NSString *)d
   [myconversation setTitle:title description:description];
 };
 
-// With the latest version it can be done much easier
-
-
+// Version 9.0.0
+//
 //RCT_EXPORT_METHOD(updateConversation:(NSString*)title description:(NSString*)description  resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
 //
 //  NSLog(@"Smooch updateConversation with %@", description);
