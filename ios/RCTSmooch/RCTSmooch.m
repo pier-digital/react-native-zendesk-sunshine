@@ -70,15 +70,18 @@
 }
 
 -(void)conversation:(SKTConversation *)conversation willDismissViewController:(UIViewController*)viewController {
-    [hideId sendEvent];
+    if (sendHideEvent) {
+        [hideId sendEvent];
+    }
     hideConversation = YES;
 }
 
 + (id)sharedManager {
     static MyConversationDelegate *sharedMyManager = nil;
     @synchronized(self) {
-        if (sharedMyManager == nil)
+        if (sharedMyManager == nil) {
             sharedMyManager = [[self alloc] init];
+        }
     }
     return sharedMyManager;
 }
@@ -93,6 +96,16 @@
 - (NSDictionary *)getMetadata {
     NSLog(@"Smooch getMetadata");
     return metadata;
+}
+
+- (void)setSendHideEvent:(BOOL)hideEvent {
+    NSLog(@"Smooch setSendHideEvent");
+    sendHideEvent = hideEvent;
+}
+
+- (BOOL)getSendHideEvent {
+    NSLog(@"Smooch getSendHideEvent");
+    return sendHideEvent;
 }
 
 - (void)setTitle:(NSString *)title description:(NSString *)description {
@@ -357,6 +370,12 @@ RCT_EXPORT_METHOD(setSignedUpAt:(NSDate*)date) {
   NSLog(@"Smooch setSignedUpAt");
 
   [SKTUser currentUser].signedUpAt = date;
+};
+
+RCT_EXPORT_METHOD(setSendHideEvent:(BOOL)hideEvent) {
+  NSLog(@"Smooch setSendHideEvent");
+  MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
+  [myconversation setSendHideEvent:hideEvent];
 };
 
 RCT_EXPORT_METHOD(setMetadata:(NSDictionary *)options) {
