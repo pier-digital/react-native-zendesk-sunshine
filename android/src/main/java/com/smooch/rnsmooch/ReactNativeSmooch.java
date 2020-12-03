@@ -49,6 +49,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
 
     private ReactApplicationContext mreactContext;
     private ReadableMap metadata = null;
+	private Boolean sendHideEvent = false;
 
     @Override
     public String getName() {
@@ -84,6 +85,11 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
             }
         });
     }
+
+	@ReactMethod
+	public void setSendHideEvent(Boolean hideEvent) {
+	    sendHideEvent = hideEvent;
+	}
 
     @ReactMethod
     public void logout(final Promise promise) {
@@ -171,14 +177,16 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
 
             @Override
             public void onSmoochHidden() {
-                Log.d("onSmoochHidden", "send event hideConversation");
-                WritableMap params = Arguments.createMap();
-                String name = "";
-                if (metadata != null && getProperties(metadata).get("short_property_code") != null) {
-                    name = (String) getProperties(metadata).get("short_property_code");
-                }
-                params.putString("name", name);
-                sendEvent(mreactContext, "hideConversation", params);
+				if (sendHideEvent) {
+	                Log.d("onSmoochHidden", "send event hideConversation");
+	                WritableMap params = Arguments.createMap();
+	                String name = "";
+	                if (metadata != null && getProperties(metadata).get("short_property_code") != null) {
+	                    name = (String) getProperties(metadata).get("short_property_code");
+	                }
+	                params.putString("name", name);
+	                sendEvent(mreactContext, "hideConversation", params);
+				}
             }
 
             @Override
