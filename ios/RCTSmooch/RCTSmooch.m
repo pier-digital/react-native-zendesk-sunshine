@@ -145,9 +145,7 @@ RCT_EXPORT_METHOD(show:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejec
     [Smooch show];
     MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
     [myconversation setControllerState:self];
-    NSMutableDictionary *cState = [[NSMutableDictionary alloc] init];
-    cState[@"conversationState"] = @(NO);
-    resolve(@(YES));
+    resolve(@(NO));
   });
 };
 
@@ -159,19 +157,19 @@ RCT_EXPORT_METHOD(close) {
     });
 };
 
-RCT_EXPORT_METHOD(login:(NSString*)userId jwt:(NSString*)jwt resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+RCT_EXPORT_METHOD(login:(NSString*)externalId jwt:(NSString*)jwt resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
   NSLog(@"Smooch Login");
 
   dispatch_async(dispatch_get_main_queue(), ^{
-      [Smooch login:userId jwt:jwt completionHandler:^(NSError * _Nullable error, NSDictionary * _Nullable userInfo) {
-          if (error) {
+      [Smooch login:externalId jwt:jwt completionHandler:^(NSError * _Nullable error, NSDictionary * _Nullable userInfo) {
+          if (error == nil) {
+              resolve(userInfo);
+          } else {
+              NSLog(@"Error Login");
               reject(
                  userInfo[SKTErrorCodeIdentifier],
                  userInfo[SKTErrorDescriptionIdentifier],
                  error);
-          }
-          else {
-              resolve(userInfo);
           }
       }];
   });
@@ -198,7 +196,8 @@ RCT_EXPORT_METHOD(logout:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRej
 RCT_EXPORT_METHOD(setUserProperties:(NSDictionary*)options) {
   NSLog(@"Smooch setUserProperties with %@", options);
 
-  [[SKTUser currentUser] addProperties:options];
+    [[SKTUser currentUser] addMetadata:options];
+  // [[SKTUser currentUser] addProperties:options];
 };
 
 RCT_EXPORT_METHOD(getUserId:(RCTPromiseResolveBlock)resolve
@@ -265,7 +264,7 @@ RCT_EXPORT_METHOD(getMessages:(RCTPromiseResolveBlock)resolve
   for (id message in messages) {
       if (message != nil) {
           NSMutableDictionary *newMessage = [[NSMutableDictionary alloc] init];
-          newMessage[@"name"] = [message name];
+          newMessage[@"name"] = [message displayName]; // name
           newMessage[@"text"] = [message text];
           newMessage[@"isFromCurrentUser"] = @([message isFromCurrentUser]);
           newMessage[@"messageId"] = [message messageId];
@@ -301,7 +300,7 @@ RCT_EXPORT_METHOD(getMessagesMetadata:(NSDictionary *)metadata resolver:(RCTProm
       NSDictionary *options = [message metadata];
       if ([options[@"short_property_code"] isEqualToString:metadata[@"short_property_code"]]) {
           NSMutableDictionary *newMessage = [[NSMutableDictionary alloc] init];
-          newMessage[@"name"] = [message name];
+          newMessage[@"name"] = [message displayName]; // name
           newMessage[@"text"] = [message text];
           newMessage[@"isFromCurrentUser"] = @([message isFromCurrentUser]);
           newMessage[@"messageId"] = [message messageId];
