@@ -6,6 +6,10 @@
 @interface MyConversationDelegate()
 @end
 
+@interface SmoochManager()
+- (void)sendEvent;
+@end
+
 @implementation MyConversationDelegate
 @synthesize someProperty;
 
@@ -65,6 +69,11 @@
     }
 }
 
+-(void)conversation:(SKTConversation *)conversation willDismissViewController:(UIViewController*)viewController {
+    [hideId sendEvent];
+    hideConversation = YES;
+}
+
 + (id)sharedManager {
     static MyConversationDelegate *sharedMyManager = nil;
     @synchronized(self) {
@@ -94,17 +103,51 @@
         [Smooch conversation].delegate = self;
     }
 }
+
+- (void)setControllerState:(id)callEvent {
+    if ([Smooch conversation] != nil) {
+        [Smooch conversation].delegate = self;
+    }
+    hideConversation = NO;
+    hideId = callEvent;
+}
+
+- (BOOL)getControllerState {
+    return hideConversation;
+}
 @end
 
 @implementation SmoochManager
 
 RCT_EXPORT_MODULE();
 
-RCT_EXPORT_METHOD(show) {
+- (NSArray<NSString *> *)supportedEvents
+{
+  return @[@"hideConversation"];
+}
+
+- (void)sendEvent {
+    NSLog(@"sendEvent");
+    MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
+    NSDictionary *options = [myconversation getMetadata];
+    if (options != nil && options[@"short_property_code"] != nil) {
+        NSString *name = options[@"short_property_code"];
+        [self sendEventWithName:@"hideConversation" body:@{@"name":name}];
+    } else {
+        [self sendEventWithName:@"hideConversation" body:@{@"name":@""}];
+    }
+}
+
+RCT_EXPORT_METHOD(show:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
   NSLog(@"Smooch Show");
 
   dispatch_async(dispatch_get_main_queue(), ^{
     [Smooch show];
+    MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
+    [myconversation setControllerState:self];
+    NSMutableDictionary *cState = [[NSMutableDictionary alloc] init];
+    cState[@"conversationState"] = @(NO);
+    resolve(@(YES));
   });
 };
 

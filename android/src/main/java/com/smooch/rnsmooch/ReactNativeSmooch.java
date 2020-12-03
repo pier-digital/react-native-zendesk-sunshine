@@ -5,33 +5,51 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 
+import io.smooch.core.CardSummary;
+import io.smooch.core.ConversationDelegate;
+import io.smooch.core.ConversationEvent;
+import io.smooch.core.InitializationStatus;
+import io.smooch.core.MessageAction;
+import io.smooch.core.MessageUploadStatus;
+import io.smooch.core.PaymentStatus;
 import io.smooch.core.Smooch;
 import io.smooch.core.SmoochCallback;
+import io.smooch.core.SmoochConnectionStatus;
 import io.smooch.core.User;
 import io.smooch.ui.ConversationActivity;
 import io.smooch.core.MessageModifierDelegate;
 import io.smooch.core.Message;
 import io.smooch.core.Conversation;
+import io.smooch.core.ConversationDelegateAdapter;
 import io.smooch.core.ConversationDetails;
 import io.smooch.core.LogoutResult;
 import io.smooch.core.LoginResult;
 
 public class ReactNativeSmooch extends ReactContextBaseJavaModule {
+
+    private ReactApplicationContext mreactContext;
+    private ReadableMap metadata = null;
+
     @Override
     public String getName() {
         return "SmoochManager";
@@ -39,6 +57,15 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
 
     public ReactNativeSmooch(ReactApplicationContext reactContext) {
         super(reactContext);
+        mreactContext = reactContext;
+    }
+
+    private void sendEvent(ReactContext reactContext,
+                           String eventName,
+                           @Nullable WritableMap params) {
+        reactContext
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit(eventName, params);
     }
 
     @ReactMethod
@@ -73,8 +100,93 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void show() {
+    public void show(final Promise promise) {
         ConversationActivity.builder().withFlags(Intent.FLAG_ACTIVITY_NEW_TASK).show(getReactApplicationContext());
+        
+        Smooch.setConversationDelegate(new ConversationDelegate() {
+            @Override
+            public void onMessagesReceived(@NonNull Conversation conversation, @NonNull List<Message> list) {
+
+            }
+
+            @Override
+            public void onMessagesReset(@NonNull Conversation conversation, @NonNull List<Message> list) {
+
+            }
+
+            @Override
+            public void onUnreadCountChanged(@NonNull Conversation conversation, int i) {
+
+            }
+
+            @Override
+            public void onMessageSent(@NonNull Message message, @NonNull MessageUploadStatus messageUploadStatus) {
+
+            }
+
+            @Override
+            public void onConversationEventReceived(@NonNull ConversationEvent conversationEvent) {
+
+            }
+
+            @Override
+            public void onInitializationStatusChanged(@NonNull InitializationStatus initializationStatus) {
+
+            }
+
+            @Override
+            public void onLoginComplete(@NonNull LoginResult loginResult) {
+
+            }
+
+            @Override
+            public void onLogoutComplete(@NonNull LogoutResult logoutResult) {
+
+            }
+
+            @Override
+            public void onPaymentProcessed(@NonNull MessageAction messageAction, @NonNull PaymentStatus paymentStatus) {
+
+            }
+
+            @Override
+            public boolean shouldTriggerAction(@NonNull MessageAction messageAction) {
+                return false;
+            }
+
+            @Override
+            public void onCardSummaryLoaded(@NonNull CardSummary cardSummary) {
+
+            }
+
+            @Override
+            public void onSmoochConnectionStatusChanged(@NonNull SmoochConnectionStatus smoochConnectionStatus) {
+
+            }
+
+            @Override
+            public void onSmoochShown() {
+
+            }
+
+            @Override
+            public void onSmoochHidden() {
+                Log.d("onSmoochHidden", "send event hideConversation");
+                WritableMap params = Arguments.createMap();
+                String name = "";
+                if (metadata != null && getProperties(metadata).get("short_property_code") != null) {
+                    name = (String) getProperties(metadata).get("short_property_code");
+                }
+                params.putString("name", name);
+                sendEvent(mreactContext, "hideConversation", params);
+            }
+
+            @Override
+            public void onConversationsListUpdated(@NonNull List<Conversation> list) {
+
+            }
+        });
+        promise.resolve(false);
         // v8 ConversationActivity.show(getReactApplicationContext(), Intent.FLAG_ACTIVITY_NEW_TASK);
     }
 
@@ -213,6 +325,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
     @ReactMethod
     public void setMetadata(final ReadableMap metadata) {
 
+        this.metadata = metadata;
         Smooch.setMessageModifierDelegate(new MessageModifierDelegate() {
             @Override
             public Message beforeSend(ConversationDetails conversationDetails, Message message) {
