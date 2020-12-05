@@ -47,23 +47,23 @@
         NSString *fullTitle = [NSString stringWithFormat:@"%@ (%@)", conversationTitle, conversationDescription];
         UIStackView *titleView = [[UIStackView alloc] init];
         titleView.axis = UILayoutConstraintAxisVertical;
-        
+
         UILabel *titleLabel = [[UILabel alloc] init];
         titleLabel.textAlignment = UITextAlignmentCenter;
         titleLabel.font = [UIFont systemFontOfSize:20];
         titleLabel.textColor = UIColor.darkGrayColor;
         titleLabel.text = conversationTitle;
-        
+
         UILabel *subtitleLabel = [[UILabel alloc] init];
         subtitleLabel.textAlignment = UITextAlignmentCenter;
         subtitleLabel.font = [UIFont systemFontOfSize:13];
         subtitleLabel.textColor = UIColor.darkGrayColor;
         subtitleLabel.text = conversationDescription;
-        
+
         [titleView addArrangedSubview:titleLabel];
         [titleView addArrangedSubview:subtitleLabel];
         [titleView sizeToFit];
-        
+
         // [navigationItem setTitle:fullTitle];
         [navigationItem setTitleView:titleView];
     }
@@ -139,6 +139,16 @@ RCT_EXPORT_MODULE();
   return @[@"hideConversation"];
 }
 
+- (BOOL)isInteger:(NSString *)toCheck {
+  if([toCheck intValue] != 0) {
+    return true;
+  } else if([toCheck isEqualToString:@"0"]) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 - (void)sendEvent {
     NSLog(@"sendEvent");
     MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
@@ -210,7 +220,7 @@ RCT_EXPORT_METHOD(logout:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRej
 RCT_EXPORT_METHOD(setUserProperties:(NSDictionary*)options) {
   NSLog(@"Smooch setUserProperties with %@", options);
 
-    // [[SKTUser currentUser] addMetadata:options];
+  // [[SKTUser currentUser] addMetadata:options];
   [[SKTUser currentUser] addProperties:options];
 };
 
@@ -229,7 +239,7 @@ RCT_EXPORT_METHOD(getGroupCounts:(RCTPromiseResolveBlock)resolve
 
   NSArray *messages = [Smooch conversation].messages;
   NSMutableDictionary *newMessage = [[NSMutableDictionary alloc] init];
-    
+
   for (id message in messages) {
       if (message != nil) {
           NSDictionary *options = [message metadata];
@@ -252,11 +262,11 @@ RCT_EXPORT_METHOD(getGroupCounts:(RCTPromiseResolveBlock)resolve
   }
 
   NSMutableArray *groups = [[NSMutableArray alloc] init];
-    
+
   NSMutableDictionary *totalMessage = [[NSMutableDictionary alloc] init];
   totalMessage[@"totalUnReadCount"] = @(totalUnreadCount);
   [groups addObject: totalMessage];
-    
+
   for (NSString *key in newMessage) {
       NSInteger value = [newMessage[key] longValue];
       NSMutableDictionary *tMsg = [[NSMutableDictionary alloc] init];
@@ -264,7 +274,7 @@ RCT_EXPORT_METHOD(getGroupCounts:(RCTPromiseResolveBlock)resolve
       tMsg[@"unReadCount"] = @(value);
       [groups addObject: tMsg];
   }
-    
+
   resolve(groups);
 };
 
@@ -295,6 +305,38 @@ RCT_EXPORT_METHOD(getMessages:(RCTPromiseResolveBlock)resolve
               newMessage[@"isRead"] = @(isRead);
           } else {
               newMessage[@"isRead"] = @(NO);
+          }
+          [newMessages addObject: newMessage];
+      }
+  }
+  resolve(newMessages);
+};
+
+RCT_EXPORT_METHOD(getIncomeMessages:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+  NSLog(@"Smooch getIncomeMessages");
+  NSUserDefaults *db = [NSUserDefaults standardUserDefaults];
+
+  NSMutableArray *newMessages = [[NSMutableArray alloc] init];
+  NSArray *messages = [Smooch conversation].messages;
+  for (id message in messages) {
+      if (message != nil && ![message isFromCurrentUser]) {
+          NSMutableDictionary *newMessage = [[NSMutableDictionary alloc] init];
+          NSDate *msgDate = [message date];
+          NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+          [formatter setDateFormat: @"yyyy-MM-dd HH:mm:ss"];
+          newMessage[@"date"] = [formatter stringFromDate:msgDate];
+          if ([self isInteger:[message messageId]]) {
+            NSString *msgId = [message messageId];
+            NSInteger msgIdInt = [msgId integerValue];
+            newMessage[@"id"] = @(msgIdInt);
+          } else {
+            newMessage[@"id"] = @(0);
+          }
+          NSDictionary *options = [message metadata];
+          if (options != nil) {
+              newMessage[@"short_property_code"] = options[@"short_property_code"];
+              newMessage[@"location_display_name"] = options[@"location_display_name"];
           }
           [newMessages addObject: newMessage];
       }
@@ -385,10 +427,12 @@ RCT_EXPORT_METHOD(setMetadata:(NSDictionary *)options) {
   NSLog(@"Smooch getMetadata with %@", [myconversation getMetadata]);
 };
 
-RCT_EXPORT_METHOD(updateConversation:(NSString *)title description:(NSString *)description) {
+RCT_EXPORT_METHOD(updateConversation:(NSString *)title description:(NSString *)description resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
   NSLog(@"Smooch updateConversation with %@", description);
   MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
   [myconversation setTitle:title description:description];
+  resolve(@(YES));
 };
 
 // Version 9.0.0

@@ -21,6 +21,8 @@ import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
@@ -276,6 +278,39 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                 } else {
                     map.putBoolean("isRead", false);
                 }
+                promiseArray.pushMap(map);
+            }
+        }
+        promise.resolve(promiseArray);
+    }
+
+    @ReactMethod
+    public void getIncomeMessages(final Promise promise) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getReactApplicationContext());
+
+        List<Message> messages = Smooch.getConversation().getMessages();
+
+        WritableArray promiseArray = Arguments.createArray();
+        for (Message message : messages) {
+            if (message != null && !message.isFromCurrentUser()) {
+                WritableMap map = Arguments.createMap();
+                DateFormat df2 = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+                map.putString("date", df2.format(message.getDate()));
+                String msgId = message.getId();
+                int intMsgId;
+                try {
+                    intMsgId = Integer.parseInt(msgId);
+                }
+                catch (NumberFormatException e)
+                {
+                    intMsgId = 0;
+                }
+                map.putInt("id", intMsgId);
+                if (message.getMetadata() != null) {
+                    map.putString("short_property_code", (String) message.getMetadata().get("short_property_code"));
+                    map.putString("location_display_name", (String) message.getMetadata().get("location_display_name"));
+                }
+
                 promiseArray.pushMap(map);
             }
         }
