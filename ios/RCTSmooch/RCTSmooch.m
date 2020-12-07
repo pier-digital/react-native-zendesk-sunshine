@@ -326,17 +326,26 @@ RCT_EXPORT_METHOD(getIncomeMessages:(RCTPromiseResolveBlock)resolve
           NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
           [formatter setDateFormat: @"yyyy-MM-dd HH:mm:ss"];
           newMessage[@"date"] = [formatter stringFromDate:msgDate];
-          if ([self isInteger:[message messageId]]) {
-            NSString *msgId = [message messageId];
-            NSInteger msgIdInt = [msgId integerValue];
-            newMessage[@"id"] = @(msgIdInt);
+          NSString *msgId = [message messageId];
+          if (msgId != nil) {
+            newMessage[@"id"] = msgId; // example: 5fbdc1a608b132000c691500
+            BOOL isRead = [db boolForKey:msgId];
+            newMessage[@"is_read"] = @(isRead);
           } else {
-            newMessage[@"id"] = @(0);
+            newMessage[@"id"] = @"0";
+            newMessage[@"is_read"] = @(NO);
           }
           NSDictionary *options = [message metadata];
           if (options != nil) {
+            if (options[@"short_property_code"] != nil) {
+              newMessage[@"chat_type"] = @"property";
               newMessage[@"short_property_code"] = options[@"short_property_code"];
-              newMessage[@"location_display_name"] = options[@"location_display_name"];
+              if (options[@"location_display_name"] != nil) {
+                newMessage[@"location_display_name"] = options[@"location_display_name"];
+              } else {
+                newMessage[@"location_display_name"] = [message name];
+              }
+            } // chat_type of employee and employee_name is not real anymore
           }
           [newMessages addObject: newMessage];
       }

@@ -294,23 +294,28 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
         for (Message message : messages) {
             if (message != null && !message.isFromCurrentUser()) {
                 WritableMap map = Arguments.createMap();
-                DateFormat df2 = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+                DateFormat df2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 map.putString("date", df2.format(message.getDate()));
                 String msgId = message.getId();
-                int intMsgId;
-                try {
-                    intMsgId = Integer.parseInt(msgId);
+                if (msgId != null) {
+                    map.putString("id", msgId); // example: 5fbdc1a608b132000c691500
+                    Boolean isRead = sharedPreferences.getBoolean(msgId, false);
+                    map.putBoolean("is_read", isRead);
+                } else {
+                    map.putString("id", "0" );
+                    map.putBoolean("is_read", false);
                 }
-                catch (NumberFormatException e)
-                {
-                    intMsgId = 0;
-                }
-                map.putInt("id", intMsgId);
                 if (message.getMetadata() != null) {
-                    map.putString("short_property_code", (String) message.getMetadata().get("short_property_code"));
-                    map.putString("location_display_name", (String) message.getMetadata().get("location_display_name"));
+                    if (message.getMetadata().get("short_property_code") != null) {
+                        map.putString("chat_type", "property");
+                        map.putString("short_property_code", (String) message.getMetadata().get("short_property_code"));
+                        if (message.getMetadata().get("location_display_name") != null) {
+                            map.putString("location_display_name", (String) message.getMetadata().get("location_display_name"));
+                        } else {
+                            map.putString("location_display_name", (String) message.getName());
+                        }
+                    } // chat_type of employee and employee_name is not real anymore
                 }
-
                 promiseArray.pushMap(map);
             }
         }
