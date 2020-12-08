@@ -429,6 +429,13 @@ RCT_EXPORT_METHOD(setSendHideEvent:(BOOL)hideEvent) {
   [myconversation setSendHideEvent:hideEvent];
 };
 
+RCT_EXPORT_METHOD(setRead:(NSString *)msgId) {
+  NSLog(@"Smooch setRead with %@", msgId);
+  NSUserDefaults *db = [NSUserDefaults standardUserDefaults];
+  [db setBool:@(YES) forKey:msgId];
+  [db synchronize];
+};
+
 RCT_EXPORT_METHOD(setMetadata:(NSDictionary *)options) {
   NSLog(@"Smooch setMetadata with %@", options);
   MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];

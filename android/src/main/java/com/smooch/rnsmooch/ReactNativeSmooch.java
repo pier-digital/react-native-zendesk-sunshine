@@ -371,6 +371,15 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void setRead(String msgId) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getReactApplicationContext());
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(msgId, true);
+        editor.apply();
+    }
+
+    @ReactMethod
     public void setMetadata(final ReadableMap metadata) {
 
         this.metadata = metadata;
