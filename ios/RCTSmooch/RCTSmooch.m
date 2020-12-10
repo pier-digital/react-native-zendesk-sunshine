@@ -324,7 +324,7 @@ RCT_EXPORT_METHOD(getIncomeMessages:(RCTPromiseResolveBlock)resolve
           NSMutableDictionary *newMessage = [[NSMutableDictionary alloc] init];
           NSDate *msgDate = [message date];
           NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-          [formatter setDateFormat: @"yyyy-MM-dd HH:mm:ss"];
+          [formatter setDateFormat: @"yyyy-MM-dd'T'HH:mm:ss"];
           newMessage[@"date"] = [formatter stringFromDate:msgDate];
           NSString *msgId = [message messageId];
           if (msgId != nil) {

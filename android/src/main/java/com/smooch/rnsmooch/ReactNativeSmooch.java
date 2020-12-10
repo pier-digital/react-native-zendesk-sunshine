@@ -294,7 +294,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
         for (Message message : messages) {
             if (message != null && !message.isFromCurrentUser()) {
                 WritableMap map = Arguments.createMap();
-                DateFormat df2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                DateFormat df2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
                 map.putString("date", df2.format(message.getDate()));
                 String msgId = message.getId();
                 if (msgId != null) {
