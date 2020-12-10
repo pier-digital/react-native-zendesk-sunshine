@@ -95,12 +95,28 @@ Using Smooch in your React Native App
 
 ### Require the module
 ```javascript
-const Smooch = require('react-native-smooch');
+import { Smooch } from '@billnbell/react-native-smooch';
+```
+### To set metadata
+```javascript
+const metadata = {
+  short_property_code: chatGroupId,
+  property_name: chatGroupName,
+};
+Smooch.setMetadata(metadata);
 ```
 
 ### Show the conversation screen
 ```javascript
 Smooch.show();
+```
+
+### Login to Smooch
+```javascript
+Smooch.login(smoochUserId, smoochJwt)
+  .then(() => {
+    console.log('logged in');
+  });
 ```
 
 ### Set the user's first name
@@ -118,12 +134,80 @@ Smooch.setLastName("Osiander");
 Smooch.setEmail("kurt@ralphgraciesf.com");
 ```
 
-### Set the user's sign up date
+### Turn on events and addListener in React Native
+```javascript
+Smooch.setSendHideEvent(true);
+const subscription = SmoochManagerEmitter
+  .addListener('hideConversation', () => updateUnreadCounts());
+
+Later remove it
+  subscription.remove();
+```
+
+### To set Title and Description in Conversation Header
+```javascript
+Smooch.updateConversation('Conversation', label)
+  .then(() => {
+    console.log('set the header!');
+  });
+```
+
+### Set the user's sign up date -- not tested
 ```javascript
 Smooch.setSignedUpAt((new Date).getTime());
 ```
 
-### Associate key/value pairs with the user
+### This module uses internal DB in IOS and Android to keep track of messages read.
+```javascript
+Smooch.setRead(msgId);
+getMessages().then(() => { console.log('got messages') });
+to only get those with metadata headers:
+getMessagesMetadata(metadata).then(() => { console.log('got messages') });
+to get metadata groups  - must have metadata - returns only unread messages and unique short_property_code
+getGroupCounts().then(() => { console.log('got messages') });
+```
+
+### Associate key/value pairs with the user -- not tested
 ```javascript
 Smooch.setUserProperties({"whenDidYouFsckUp": "aLongTimeAgo"});
 ```
+
+### s.d.ts (typescript)
+```javascript
+declare module '@billnbell/react-native-smooch' {
+  class Smooch {
+    login(smoochUserId: string, smoochJwt: string): Promise<void>;
+    logout(): Promise<void>;
+    setFirstName(firstName: string): void;
+    setLastName(lastName: string): void;
+    setEmail(email: string): void;
+    setMetadata(metadata: object): void;
+    setRead(msgId: string): void;
+    updateConversation(title: string, description: string | null): Promise<void>;
+    getMessages(): Promise<[]>;
+    getIncomeMessages(): Promise<IMessage[]>;
+    getMessagesMetadata(metadata: object): Promise<string>;
+    getGroupCounts(): Promise<string>;
+    show(): Promise<boolean>;
+    setSendHideEvent(hideFlag: boolean): void;
+    getUnreadCount(): Promise<number>;
+  }
+  const s = new Smooch();
+  class SmoochManagerEmitter {
+    addListener(name: string, any): any;
+    remove(): void;
+  }
+  const t = new SmoochManagerEmitter();
+  export { s as Smooch, t as SmoochManagerEmitter};
+  export type IMessage  = {
+    chat_type: string,
+    id: string,
+    location_display_name: string,
+    short_property_code: string,
+    is_read: boolean,
+    date: string,
+    date_string: string,
+  }
+}
+```
+
