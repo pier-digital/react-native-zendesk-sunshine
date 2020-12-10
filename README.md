@@ -19,7 +19,21 @@ First, make sure you've [signed up for Smooch](https://app.smooch.io/signup)
 
 If you don't already have a React Native application setup, follow the instructions [here](https://facebook.github.io/react-native/docs/getting-started.html) to create one. Make sure you use 0.63.3+.
 
-For React NAtive 0.60+ you do not need to add anything - it autolinks!
+For React Native 0.60+ you do not need to add anything - it autolinks!
+
+ ```javascript
+  "dependencies": {
+    "@billnbell/react-native-smooch": "git+https://github.com/billnbell/react-native-sunshine-conversations.git#v1.0.4",
+    ...
+  }
+ ```
+
+ ```
+yarn install
+ ```
+
+
+## IOS
 
  * You must also have your React dependencies defined in your Podfile as described [here](http://facebook.github.io/react-native/releases/0.31/docs/troubleshooting.html#missing-libraries-for-react), for example:
 
