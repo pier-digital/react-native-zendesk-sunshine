@@ -39,7 +39,7 @@ yarn install
 
  * Install pods by `cd ios` and running `pod install`.
 
- * Open your project's .xcworkspace file in XCode and initialize Smooch with your app id inside of applicationDidFinishLaunchingWithOptions.
+ * Open your project's .xcworkspace file in XCode and initialize Smooch with your app id inside of applicationDidFinishLaunchingWithOptions. Or in your App directory/AppDelegate.m file
 
 ```
 #import <Smooch/Smooch.h>
@@ -49,6 +49,7 @@ yarn install
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Initialize Smooch - these instructions are also available on [app.smooch.io](https://app.smooch.io)
     [Smooch initWithSettings:[SKTSettings settingsWithAppId:@"YOUR_APP_ID"] completionHandler:^(NSError * _Nullable error, NSDictionary * _Nullable userInfo) {
+        NSLog(@"Smooch initWithSettings");
         // Your code after init is complete
     }];
 }
