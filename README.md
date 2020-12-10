@@ -35,6 +35,8 @@ yarn install
 
 ## IOS
 
+ * This uses Smooch IOS SDK v7.1.2
+
  * You must also have your React dependencies defined in your Podfile as described [here](http://facebook.github.io/react-native/releases/0.31/docs/troubleshooting.html#missing-libraries-for-react), for example:
 
  * Install pods by `cd ios` and running `pod install`.
@@ -59,9 +61,11 @@ You're now ready to start interacting with Smooch in your React Native app.
 
 ## Android
 
-You can easily add a binding to the [Smooch Android SDK](https://github.com/smooch/smooch-android) in your React Native application by following the instructions below.
+ * this uses Smooch Android SDK v8.0.0
 
-* Add `Smooch.init` to the `onCreate` method of your `Application` class.
+ * You can easily add a binding to the [Smooch Android SDK](https://github.com/smooch/smooch-android) in your React Native application by following the instructions below.
+
+ * Add `Smooch.init` to the `onCreate` method of your `Application` class.
 
 ```java
 import io.smooch.core.Settings;
