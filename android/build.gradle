@@ -38,8 +38,8 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.facebook.react:react-native:+'
-    compile 'io.smooch:core:8.+'
-    compile 'io.smooch:ui:8.+'
-    compile "com.android.support:appcompat-v7:28.0.0"
+    implementation 'com.facebook.react:react-native:+'
+    implementation 'io.smooch:core:8.+'
+    implementation 'io.smooch:ui:8.+'
+    implementation "com.android.support:appcompat-v7:28.0.0"
 }
