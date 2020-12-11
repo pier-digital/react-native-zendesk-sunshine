@@ -142,7 +142,7 @@ Smooch.setEmail("kurt@ralphgraciesf.com");
 ```javascript
 Smooch.setSendHideEvent(true);
 const subscription = SmoochManagerEmitter
-  .addListener('hideConversation', () => updateUnreadCounts());
+  .addListener('unreadCountUpdate', () => updateUnreadCounts());
 
 Later remove it
   subscription.remove();
@@ -190,9 +190,9 @@ declare module '@billnbell/react-native-smooch' {
     updateConversation(title: string, description: string | null): Promise<void>;
     getMessages(): Promise<[]>;
     getIncomeMessages(): Promise<IMessage[]>;
-    getMessagesMetadata(metadata: object): Promise<string>;
-    getGroupCounts(): Promise<string>;
-    show(): Promise<boolean>;
+    getMessagesMetadata(metadata: object): Promise<[]>;
+    getGroupCounts(): Promise<[]>;
+    show(): void;
     setSendHideEvent(hideFlag: boolean): void;
     getUnreadCount(): Promise<number>;
   }

@@ -50,7 +50,7 @@ import io.smooch.core.LoginResult;
 public class ReactNativeSmooch extends ReactContextBaseJavaModule {
 
     private ReactApplicationContext mreactContext;
-    private ReadableMap metadata = null;
+    private ReadableMap globalMetadata = null;
 	private Boolean sendHideEvent = false;
 
     @Override
@@ -81,6 +81,8 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                     promise.reject("" + response.getStatus(), response.getError());
                     return;
                 }
+                setMessageDelegate();
+                setConversationDelegate();
 
                 promise.resolve(null);
               }
@@ -108,95 +110,8 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void show(final Promise promise) {
+    public void show() {
         ConversationActivity.builder().withFlags(Intent.FLAG_ACTIVITY_NEW_TASK).show(getReactApplicationContext());
-        
-        Smooch.setConversationDelegate(new ConversationDelegate() {
-            @Override
-            public void onMessagesReceived(@NonNull Conversation conversation, @NonNull List<Message> list) {
-
-            }
-
-            @Override
-            public void onMessagesReset(@NonNull Conversation conversation, @NonNull List<Message> list) {
-
-            }
-
-            @Override
-            public void onUnreadCountChanged(@NonNull Conversation conversation, int i) {
-
-            }
-
-            @Override
-            public void onMessageSent(@NonNull Message message, @NonNull MessageUploadStatus messageUploadStatus) {
-
-            }
-
-            @Override
-            public void onConversationEventReceived(@NonNull ConversationEvent conversationEvent) {
-
-            }
-
-            @Override
-            public void onInitializationStatusChanged(@NonNull InitializationStatus initializationStatus) {
-
-            }
-
-            @Override
-            public void onLoginComplete(@NonNull LoginResult loginResult) {
-
-            }
-
-            @Override
-            public void onLogoutComplete(@NonNull LogoutResult logoutResult) {
-
-            }
-
-            @Override
-            public void onPaymentProcessed(@NonNull MessageAction messageAction, @NonNull PaymentStatus paymentStatus) {
-
-            }
-
-            @Override
-            public boolean shouldTriggerAction(@NonNull MessageAction messageAction) {
-                return false;
-            }
-
-            @Override
-            public void onCardSummaryLoaded(@NonNull CardSummary cardSummary) {
-
-            }
-
-            @Override
-            public void onSmoochConnectionStatusChanged(@NonNull SmoochConnectionStatus smoochConnectionStatus) {
-
-            }
-
-            @Override
-            public void onSmoochShown() {
-
-            }
-
-            @Override
-            public void onSmoochHidden() {
-				if (sendHideEvent) {
-	                Log.d("onSmoochHidden", "send event hideConversation");
-	                WritableMap params = Arguments.createMap();
-	                String name = "";
-	                if (metadata != null && getProperties(metadata).get("short_property_code") != null) {
-	                    name = (String) getProperties(metadata).get("short_property_code");
-	                }
-	                params.putString("name", name);
-	                sendEvent(mreactContext, "hideConversation", params);
-				}
-            }
-
-            @Override
-            public void onConversationsListUpdated(@NonNull List<Conversation> list) {
-
-            }
-        });
-        promise.resolve(false);
         // v8 ConversationActivity.show(getReactApplicationContext(), Intent.FLAG_ACTIVITY_NEW_TASK);
     }
 
@@ -381,40 +296,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void setMetadata(final ReadableMap metadata) {
-
-        this.metadata = metadata;
-        Smooch.setMessageModifierDelegate(new MessageModifierDelegate() {
-            @Override
-            public Message beforeSend(ConversationDetails conversationDetails, Message message) {
-                Log.d("Smooch", String.valueOf(metadata));
-                message.setMetadata(getProperties(metadata));
-                return message;
-            }
-
-            @Override
-            public Message beforeDisplay(ConversationDetails conversationDetails, Message message) {
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getReactApplicationContext());
-
-                if (message != null && message.getMetadata() != null && message.getMetadata().get("short_property_code").equals(getProperties(metadata).get("short_property_code"))) {
-                    String msgId = message.getId();
-                    if (msgId != null) {
-                        Boolean isRead = sharedPreferences.getBoolean(msgId, false);
-                        if (!isRead) {
-                            SharedPreferences.Editor editor = sharedPreferences.edit();
-                            editor.putBoolean(msgId, true);
-                            editor.apply();
-                        }
-                    }
-                    return message;
-                }
-                return null;
-            }
-
-            @Override
-            public Message beforeNotification(String s, Message message) {
-                return message;
-            }
-        });
+        this.globalMetadata = metadata;
     }
 
     @ReactMethod
@@ -454,6 +336,138 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
         }
 
         return props;
+    }
+    private void setMessageDelegate() {
+        Smooch.setMessageModifierDelegate(new MessageModifierDelegate() {
+            @Override
+            public Message beforeSend(ConversationDetails conversationDetails, Message message) {
+                if (globalMetadata != null) {
+                    Log.d("Smooch", String.valueOf(globalMetadata));
+                    message.setMetadata(getProperties(globalMetadata));
+                }
+                return message;
+            }
+
+            @Override
+            public Message beforeDisplay(ConversationDetails conversationDetails, Message message) {
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getReactApplicationContext());
+                if (globalMetadata != null && message != null && message.getMetadata() != null && message.getMetadata().get("short_property_code").equals(getProperties(globalMetadata).get("short_property_code"))) {
+                    String msgId = message.getId();
+                    if (msgId != null) {
+                        Boolean isRead = sharedPreferences.getBoolean(msgId, false);
+                        if (!isRead) {
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putBoolean(msgId, true);
+                            editor.apply();
+                        }
+                    }
+                    return message;
+                }
+                return null;
+            }
+
+            @Override
+            public Message beforeNotification(String s, Message message) {
+
+                WritableMap params = Arguments.createMap();
+                if (message.getMetadata() == null) {
+                    return null;
+                }
+                String code = (String) message.getMetadata().get("short_property_code");
+                params.putString("short_property_code", code);
+                String name = (String) message.getMetadata().get("location_display_name");
+                params.putString("location_display_name", name);
+
+                setMetadata(params);
+                updateConversation("Conversation", name, null);
+                if (sendHideEvent) {
+                    Log.d("onUnreadCountUpdate", "on beforeNotification");
+                    sendEvent(mreactContext, "unreadCountUpdate", null);
+                }
+
+                return message;
+            }
+        });
+    }
+    private void setConversationDelegate() {
+        Smooch.setConversationDelegate(new ConversationDelegate() {
+            @Override
+            public void onMessagesReceived(@NonNull Conversation conversation, @NonNull List<Message> list) {
+
+            }
+
+            @Override
+            public void onMessagesReset(@NonNull Conversation conversation, @NonNull List<Message> list) {
+
+            }
+
+            @Override
+            public void onUnreadCountChanged(@NonNull Conversation conversation, int i) {
+
+            }
+
+            @Override
+            public void onMessageSent(@NonNull Message message, @NonNull MessageUploadStatus messageUploadStatus) {
+
+            }
+
+            @Override
+            public void onConversationEventReceived(@NonNull ConversationEvent conversationEvent) {
+
+            }
+
+            @Override
+            public void onInitializationStatusChanged(@NonNull InitializationStatus initializationStatus) {
+
+            }
+
+            @Override
+            public void onLoginComplete(@NonNull LoginResult loginResult) {
+
+            }
+
+            @Override
+            public void onLogoutComplete(@NonNull LogoutResult logoutResult) {
+
+            }
+
+            @Override
+            public void onPaymentProcessed(@NonNull MessageAction messageAction, @NonNull PaymentStatus paymentStatus) {
+
+            }
+
+            @Override
+            public boolean shouldTriggerAction(@NonNull MessageAction messageAction) {
+                return false;
+            }
+
+            @Override
+            public void onCardSummaryLoaded(@NonNull CardSummary cardSummary) {
+
+            }
+
+            @Override
+            public void onSmoochConnectionStatusChanged(@NonNull SmoochConnectionStatus smoochConnectionStatus) {
+
+            }
+
+            @Override
+            public void onSmoochShown() {
+            }
+
+            @Override
+            public void onSmoochHidden() {
+                if (sendHideEvent) {
+                    Log.d("onUnreadCountUpdate", "onSmoochHidden");
+                    sendEvent(mreactContext, "unreadCountUpdate", null);
+                }
+            }
+
+            @Override
+            public void onConversationsListUpdated(@NonNull List<Conversation> list) {
+
+            }
+        });
     }
 
 }

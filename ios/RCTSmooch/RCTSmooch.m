@@ -1,5 +1,6 @@
 #import "RCTSmooch.h"
 #import <Smooch/Smooch.h>
+#import <UserNotifications/UserNotifications.h>
 #import <Smooch/SKTMessage.h>
 #import <Smooch/SKTConversation.h>
 
@@ -35,10 +36,21 @@
               [db synchronize];
             }
         }
+
         return message;
       }
     }
     return nil;
+}
+
+- (BOOL)conversation:(SKTConversation *)conversation shouldShowInAppNotificationForMessage:(SKTMessage *)message {
+    NSDictionary *options = message.metadata;
+    NSLog(@"Smooch shouldShowInAppNotificationForMessage with %@", options);
+    conversationTitle = @"Conversation";
+    conversationDescription = options[@"location_display_name"];
+    metadata = options;
+
+    return true;
 }
 
 - (void)conversation:(SKTConversation *)conversation willShowViewController:(UIViewController *)viewController {
@@ -130,13 +142,36 @@
 }
 @end
 
+
+@interface NotificationManager
+@end
+
+@implementation NotificationManager
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler {
+    if (notification.request.content.userInfo[SKTPushNotificationIdentifier] != nil) { [[Smooch userNotificationCenterDelegate] userNotificationCenter:center willPresentNotification:notification withCompletionHandler:completionHandler];
+        return;
+
+    }
+}
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void (^)())completionHandler {
+    if (response.notification.request.content.userInfo[SKTPushNotificationIdentifier] != nil) {
+        [[Smooch userNotificationCenterDelegate] userNotificationCenter:center didReceiveNotificationResponse:response withCompletionHandler:completionHandler];
+        return;
+
+    }
+}
+
+@end
+
 @implementation SmoochManager
 
 RCT_EXPORT_MODULE();
 
 - (NSArray<NSString *> *)supportedEvents
 {
-  return @[@"hideConversation"];
+  return @[@"unreadCountUpdate"];
 }
 
 - (BOOL)isInteger:(NSString *)toCheck {
@@ -155,20 +190,17 @@ RCT_EXPORT_MODULE();
     NSDictionary *options = [myconversation getMetadata];
     if (options != nil && options[@"short_property_code"] != nil) {
         NSString *name = options[@"short_property_code"];
-        [self sendEventWithName:@"hideConversation" body:@{@"name":name}];
+        [self sendEventWithName:@"unreadCountUpdate" body:@{@"name":name}];
     } else {
-        [self sendEventWithName:@"hideConversation" body:@{@"name":@""}];
+        [self sendEventWithName:@"unreadCountUpdate" body:@{@"name":@""}];
     }
 }
 
-RCT_EXPORT_METHOD(show:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+RCT_EXPORT_METHOD(show) {
   NSLog(@"Smooch Show");
 
   dispatch_async(dispatch_get_main_queue(), ^{
     [Smooch show];
-    MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
-    [myconversation setControllerState:self];
-    resolve(@(NO));
   });
 };
 
@@ -193,6 +225,8 @@ RCT_EXPORT_METHOD(login:(NSString*)externalId jwt:(NSString*)jwt resolver:(RCTPr
                  error);
           }
           else {
+              MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
+              [myconversation setControllerState:self];
               resolve(userInfo);
           }
       }];
@@ -220,7 +254,6 @@ RCT_EXPORT_METHOD(logout:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRej
 RCT_EXPORT_METHOD(setUserProperties:(NSDictionary*)options) {
   NSLog(@"Smooch setUserProperties with %@", options);
 
-  // [[SKTUser currentUser] addMetadata:options];
   [[SKTUser currentUser] addProperties:options];
 };
 
