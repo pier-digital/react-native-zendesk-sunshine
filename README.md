@@ -210,6 +210,7 @@ declare module '@billnbell/react-native-smooch' {
     is_read: boolean,
     date: string,
     date_string: string,
+    is_from_current_user: boolean,
   }
 
 }
