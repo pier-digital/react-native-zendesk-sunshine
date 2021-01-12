@@ -176,22 +176,24 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
         for (Message message : messages) {
             if (message != null) {
                 WritableMap map = Arguments.createMap();
-                map.putString("name", message.getName());
-                map.putString("text", message.getText());
-                map.putBoolean("isFromCurrentUser", message.isFromCurrentUser()); // map.putBoolean
-                map.putString("messageId", message.getId());
+                DateFormat df2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                map.putString("date", df2.format(message.getDate()));
+                //map.putString("name", message.getName());
+                //map.putString("text", message.getText());
+                map.putBoolean("is_from_current_user", message.isFromCurrentUser()); // map.putBoolean
+                map.putString("id", message.getId());
                 if (message.getMetadata() != null) {
                     map.putString("short_property_code", (String) message.getMetadata().get("short_property_code"));
                     map.putString("location_display_name", (String) message.getMetadata().get("location_display_name"));
                 }
                 String msgId = message.getId();
                 if (message.isFromCurrentUser()) {
-                    map.putBoolean("isRead", true);
+                    map.putBoolean("is_read", true);
                 } else if (msgId != null) {
                     Boolean isRead = sharedPreferences.getBoolean(msgId, false);
-                    map.putBoolean("isRead", isRead);
+                    map.putBoolean("is_read", isRead);
                 } else {
-                    map.putBoolean("isRead", false);
+                    map.putBoolean("is_read", false);
                 }
                 promiseArray.pushMap(map);
             }
@@ -222,7 +224,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                 }
                 if (message.getMetadata() != null) {
                     if (message.getMetadata().get("short_property_code") != null) {
-                        map.putString("chat_type", "property");
+                        // map.putString("chat_type", "property");
                         map.putString("short_property_code", (String) message.getMetadata().get("short_property_code"));
                         if (message.getMetadata().get("location_display_name") != null) {
                             map.putString("location_display_name", (String) message.getMetadata().get("location_display_name"));

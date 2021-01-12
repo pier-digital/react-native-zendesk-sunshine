@@ -179,7 +179,6 @@ Smooch.setUserProperties({"whenDidYouFsckUp": "aLongTimeAgo"});
 ### s.d.ts (typescript)
 ```javascript
 declare module '@billnbell/react-native-smooch' {
-  class Smooch {
     login(smoochUserId: string, smoochJwt: string): Promise<void>;
     logout(): Promise<void>;
     setFirstName(firstName: string): void;
@@ -188,7 +187,7 @@ declare module '@billnbell/react-native-smooch' {
     setMetadata(metadata: object): void;
     setRead(msgId: string): void;
     updateConversation(title: string, description: string | null): Promise<void>;
-    getMessages(): Promise<[]>;
+    getMessages(): Promise<IMessage[]>;
     getIncomeMessages(): Promise<IMessage[]>;
     getMessagesMetadata(metadata: object): Promise<[]>;
     getGroupCounts(): Promise<[]>;
@@ -196,6 +195,7 @@ declare module '@billnbell/react-native-smooch' {
     setSendHideEvent(hideFlag: boolean): void;
     getUnreadCount(): Promise<number>;
   }
+
   const s = new Smooch();
   class SmoochManagerEmitter {
     addListener(name: string, any): any;
@@ -204,7 +204,6 @@ declare module '@billnbell/react-native-smooch' {
   const t = new SmoochManagerEmitter();
   export { s as Smooch, t as SmoochManagerEmitter};
   export type IMessage  = {
-    chat_type: string,
     id: string,
     location_display_name: string,
     short_property_code: string,
@@ -212,6 +211,7 @@ declare module '@billnbell/react-native-smooch' {
     date: string,
     date_string: string,
   }
+
 }
 ```
 

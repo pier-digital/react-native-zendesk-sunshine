@@ -321,10 +321,14 @@ RCT_EXPORT_METHOD(getMessages:(RCTPromiseResolveBlock)resolve
   for (id message in messages) {
       if (message != nil) {
           NSMutableDictionary *newMessage = [[NSMutableDictionary alloc] init];
-          newMessage[@"name"] = [message name]; // displayName
-          newMessage[@"text"] = [message text];
-          newMessage[@"isFromCurrentUser"] = @([message isFromCurrentUser]);
-          newMessage[@"messageId"] = [message messageId];
+          // newMessage[@"name"] = [message name]; // displayName
+          // newMessage[@"text"] = [message text];
+          NSDate *msgDate = [message date];
+          NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+          [formatter setDateFormat: @"yyyy-MM-dd'T'HH:mm:ss"];
+          newMessage[@"date"] = [formatter stringFromDate:msgDate];
+          newMessage[@"is_from_current_user"] = @([message isFromCurrentUser]);
+          newMessage[@"id"] = [message messageId];
           NSDictionary *options = [message metadata];
           if (options != nil) {
               newMessage[@"short_property_code"] = options[@"short_property_code"];
@@ -332,12 +336,12 @@ RCT_EXPORT_METHOD(getMessages:(RCTPromiseResolveBlock)resolve
           }
           NSString *msgId = [message messageId];
           if ([message isFromCurrentUser]) {
-              newMessage[@"isRead"] = @(YES);
+              newMessage[@"is_read"] = @(YES);
           } else if (msgId != nil) {
               BOOL isRead = [db boolForKey:msgId];
-              newMessage[@"isRead"] = @(isRead);
+              newMessage[@"is_read"] = @(isRead);
           } else {
-              newMessage[@"isRead"] = @(NO);
+              newMessage[@"is_read"] = @(NO);
           }
           [newMessages addObject: newMessage];
       }
@@ -371,7 +375,7 @@ RCT_EXPORT_METHOD(getIncomeMessages:(RCTPromiseResolveBlock)resolve
           NSDictionary *options = [message metadata];
           if (options != nil) {
             if (options[@"short_property_code"] != nil) {
-              newMessage[@"chat_type"] = @"property";
+              // newMessage[@"chat_type"] = @"property";
               newMessage[@"short_property_code"] = options[@"short_property_code"];
               if (options[@"location_display_name"] != nil) {
                 newMessage[@"location_display_name"] = options[@"location_display_name"];
