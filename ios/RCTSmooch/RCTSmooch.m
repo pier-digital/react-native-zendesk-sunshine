@@ -339,7 +339,9 @@ RCT_EXPORT_METHOD(getMessages:(RCTPromiseResolveBlock)resolve
           if (options != nil) {
               newMessage[@"short_property_code"] = options[@"short_property_code"];
               if (options[@"location_display_name"] != nil) {
-              newMessage[@"location_display_name"] = options[@"location_display_name"];
+                newMessage[@"location_display_name"] = options[@"location_display_name"];
+              } else if (options[@"property_name"] != nil) {
+                newMessage[@"location_display_name"] = options[@"property_name"];
               } else {
                 for (id message2 in messages) {
                     if (message2 != nil) {

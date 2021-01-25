@@ -191,6 +191,8 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                     map.putString("short_property_code", (String) message.getMetadata().get("short_property_code"));
                     if (message.getMetadata().get("location_display_name") != null) {
                         map.putString("location_display_name", (String) message.getMetadata().get("location_display_name"));
+                    } else if (message.getMetadata().get("property_name") != null) {
+                        map.putString("location_display_name", (String) message.getMetadata().get("property_name"));
                     } else {
                         boolean setDisplay = false;
                         for (Message message2 : messages) {
