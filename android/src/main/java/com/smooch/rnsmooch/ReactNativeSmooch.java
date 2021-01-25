@@ -121,6 +121,11 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void moreMessages() {
+        Log.d("Smooch", "Not available on Android");
+    }
+
+    @ReactMethod
     public void getUnreadCount(Promise promise) {
         int unreadCount = Smooch.getConversation().getUnreadCount();
         promise.resolve(unreadCount);
@@ -184,7 +189,26 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                 map.putString("id", message.getId());
                 if (message.getMetadata() != null) {
                     map.putString("short_property_code", (String) message.getMetadata().get("short_property_code"));
-                    map.putString("location_display_name", (String) message.getMetadata().get("location_display_name"));
+                    if (message.getMetadata().get("location_display_name") != null) {
+                        map.putString("location_display_name", (String) message.getMetadata().get("location_display_name"));
+                    } else {
+                        boolean setDisplay = false;
+                        for (Message message2 : messages) {
+                            if (message2.getMetadata() != null) {
+                                if (message.getMetadata().get("short_property_code").equals(message2.getMetadata().get("short_property_code"))) {
+                                    if (message2.getMetadata().get("location_display_name") != null) {
+                                        map.putString("location_display_name", (String) message2.getMetadata().get("location_display_name"));
+                                        setDisplay = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if (!setDisplay) {
+                            map.putString("location_display_name", (String) message.getName());
+                        }
+                    }
+
                 }
                 String msgId = message.getId();
                 if (message.isFromCurrentUser()) {

@@ -264,6 +264,12 @@ RCT_EXPORT_METHOD(getUserId:(RCTPromiseResolveBlock)resolve
   resolve([SKTUser currentUser].userId);
 };
 
+RCT_EXPORT_METHOD(moreMessages) {
+  NSLog(@"Smooch moreMessages");
+  if ([Smooch conversation].hasPreviousMessages) {
+    [Smooch conversation].loadPreviousMessages;
+  }
+};
 RCT_EXPORT_METHOD(getGroupCounts:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
   NSLog(@"Smooch getGroupCounts");
@@ -332,7 +338,24 @@ RCT_EXPORT_METHOD(getMessages:(RCTPromiseResolveBlock)resolve
           NSDictionary *options = [message metadata];
           if (options != nil) {
               newMessage[@"short_property_code"] = options[@"short_property_code"];
+              if (options[@"location_display_name"] != nil) {
               newMessage[@"location_display_name"] = options[@"location_display_name"];
+              } else {
+                for (id message2 in messages) {
+                    if (message2 != nil) {
+                        NSDictionary *options2 = [message2 metadata];
+                        if (options2 != nil && [options[@"short_property_code"] isEqualToString:options2[@"short_property_code"]]) {
+                            if (options2[@"location_display_name"] != nil) {
+                                newMessage[@"location_display_name"] = options2[@"location_display_name"];
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (newMessage[@"location_display_name"] == nil) {
+                    newMessage[@"location_display_name"] = [message name];
+                }
+              }
           }
           NSString *msgId = [message messageId];
           if ([message isFromCurrentUser]) {
@@ -409,7 +432,11 @@ RCT_EXPORT_METHOD(getMessagesMetadata:(NSDictionary *)metadata resolver:(RCTProm
           NSDictionary *options = [message metadata];
           if (options != nil) {
               newMessage[@"short_property_code"] = options[@"short_property_code"];
-              newMessage[@"location_display_name"] = options[@"location_display_name"];
+              if (options[@"location_display_name"] != nil) {
+                newMessage[@"location_display_name"] = options[@"location_display_name"];
+              } else {
+                newMessage[@"location_display_name"] = [message name];
+              }
           }
           NSString *msgId = [message messageId];
           if ([message isFromCurrentUser]) {
