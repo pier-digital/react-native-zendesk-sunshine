@@ -344,8 +344,9 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                     }
                 }
             });
+        } else {
+            promise.resolve(null);
         }
-        promise.resolve(null);
     }
 
     private Map<String, Object> getProperties(ReadableMap properties) {
