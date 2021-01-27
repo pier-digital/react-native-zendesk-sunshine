@@ -2,6 +2,8 @@ package com.smooch.rnsmooch;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.icu.util.Calendar;
+import java.util.TimeZone;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -23,6 +25,7 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
@@ -135,6 +138,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
     public void getGroupCounts(final Promise promise) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getReactApplicationContext());
         Integer totalUnreadCount = 0;
+        Date now = Calendar.getInstance().getTime();
         List<Message> messages = Smooch.getConversation().getMessages();
         Map<String, Integer> map = new HashMap();
         for (Message message : messages) {
@@ -142,6 +146,9 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                 String name = (String) message.getMetadata().get("short_property_code");
                 String msgId = message.getId();
                 if (msgId != null) {
+                    Date msgDate = message.getDate();
+                    long days = (now.getTime() - msgDate.getTime())/(24*60*60*1000);
+                    if (days < 120) {
                     if (map.get(name) == null) {
                         map.put(name, 0);
                     }
@@ -150,6 +157,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                         totalUnreadCount += 1;
                         Integer count = map.get(name);
                         map.put(name, count + 1);
+                        }
                     }
                 }
             }
@@ -182,6 +190,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
             if (message != null) {
                 WritableMap map = Arguments.createMap();
                 DateFormat df2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                df2.setTimeZone(TimeZone.getTimeZone("UTC"));
                 map.putString("date", df2.format(message.getDate()));
                 //map.putString("name", message.getName());
                 //map.putString("text", message.getText());
@@ -238,6 +247,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
             if (message != null && !message.isFromCurrentUser()) {
                 WritableMap map = Arguments.createMap();
                 DateFormat df2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                df2.setTimeZone(TimeZone.getTimeZone("UTC"));
                 map.putString("date", df2.format(message.getDate()));
                 String msgId = message.getId();
                 if (msgId != null) {

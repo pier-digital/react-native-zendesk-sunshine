@@ -264,6 +264,12 @@ RCT_EXPORT_METHOD(getUserId:(RCTPromiseResolveBlock)resolve
   resolve([SKTUser currentUser].userId);
 };
 
+- (int)daysBetween:(NSDate *)dt1 and:(NSDate *)dt2 {
+    NSUInteger unitFlags = NSDayCalendarUnit;
+    NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
+    NSDateComponents *components = [calendar components:unitFlags fromDate:dt1 toDate:dt2 options:0];
+    return [components day];
+}
 RCT_EXPORT_METHOD(moreMessages) {
   NSLog(@"Smooch moreMessages");
   if ([Smooch conversation].hasPreviousMessages) {
@@ -278,6 +284,7 @@ RCT_EXPORT_METHOD(getGroupCounts:(RCTPromiseResolveBlock)resolve
 
   NSArray *messages = [Smooch conversation].messages;
   NSMutableDictionary *newMessage = [[NSMutableDictionary alloc] init];
+  NSDate *now = [NSDate date];
 
   for (id message in messages) {
       if (message != nil) {
@@ -286,6 +293,9 @@ RCT_EXPORT_METHOD(getGroupCounts:(RCTPromiseResolveBlock)resolve
               NSString *name = options[@"short_property_code"];
               NSString *msgId = [message messageId];
               if (msgId != nil) {
+                  NSDate *msgDate = [message date];
+                  int lengthInDays = [self daysBetween:msgDate and:now];
+                  if (lengthInDays < 120) {
                   if (newMessage[name] == nil) {
                       newMessage[name] = @(0);
                   }
@@ -294,6 +304,7 @@ RCT_EXPORT_METHOD(getGroupCounts:(RCTPromiseResolveBlock)resolve
                       totalUnreadCount += 1;
                       NSNumber *count = newMessage[name];
                       newMessage[name] = [NSNumber numberWithInt:[count intValue] + 1];
+                      }
                   }
               }
           }
@@ -332,6 +343,8 @@ RCT_EXPORT_METHOD(getMessages:(RCTPromiseResolveBlock)resolve
           NSDate *msgDate = [message date];
           NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
           [formatter setDateFormat: @"yyyy-MM-dd'T'HH:mm:ss"];
+          NSTimeZone *timeZone = [NSTimeZone timeZoneWithName:@"UTC"];
+          [formatter setTimeZone:timeZone];
           newMessage[@"date"] = [formatter stringFromDate:msgDate];
           newMessage[@"is_from_current_user"] = @([message isFromCurrentUser]);
           newMessage[@"id"] = [message messageId];
@@ -387,6 +400,8 @@ RCT_EXPORT_METHOD(getIncomeMessages:(RCTPromiseResolveBlock)resolve
           NSDate *msgDate = [message date];
           NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
           [formatter setDateFormat: @"yyyy-MM-dd'T'HH:mm:ss"];
+          NSTimeZone *timeZone = [NSTimeZone timeZoneWithName:@"UTC"];
+          [formatter setTimeZone:timeZone];
           newMessage[@"date"] = [formatter stringFromDate:msgDate];
           NSString *msgId = [message messageId];
           if (msgId != nil) {
