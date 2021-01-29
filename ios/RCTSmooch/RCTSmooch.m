@@ -299,13 +299,15 @@ RCT_EXPORT_METHOD(getGroupCounts:(RCTPromiseResolveBlock)resolve
                   if (newMessage[name] == nil) {
                       newMessage[name] = @(0);
                   }
-                  BOOL isRead = [db boolForKey:msgId];
-                  if (!isRead) {
-                      totalUnreadCount += 1;
-                      NSNumber *count = newMessage[name];
-                      newMessage[name] = [NSNumber numberWithInt:[count intValue] + 1];
-                      }
+                  if (![message isFromCurrentUser]) {
+                    BOOL isRead = [db boolForKey:msgId];
+                    if (!isRead) {
+                        totalUnreadCount += 1;
+                        NSNumber *count = newMessage[name];
+                        newMessage[name] = [NSNumber numberWithInt:[count intValue] + 1];
+                    }
                   }
+                }
               }
           }
       }

@@ -152,13 +152,15 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                     if (map.get(name) == null) {
                         map.put(name, 0);
                     }
-                    Boolean isRead = sharedPreferences.getBoolean(msgId, false);
-                    if (!isRead) {
-                        totalUnreadCount += 1;
-                        Integer count = map.get(name);
-                        map.put(name, count + 1);
-                        }
-                    }
+					if (!message.isFromCurrentUser()) {
+	                    Boolean isRead = sharedPreferences.getBoolean(msgId, false);
+	                    if (!isRead) {
+	                        totalUnreadCount += 1;
+	                        Integer count = map.get(name);
+	                        map.put(name, count + 1);
+	                        }
+	                    }
+					}
                 }
             }
         }
