@@ -54,7 +54,8 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
 
     private ReactApplicationContext mreactContext;
     private ReadableMap globalMetadata = null;
-	private Boolean sendHideEvent = false;
+    private Boolean sendHideEvent = false;
+    private Boolean messageSentEvent = false;
 
     @Override
     public String getName() {
@@ -96,6 +97,11 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
 	@ReactMethod
 	public void setSendHideEvent(Boolean hideEvent) {
 	    sendHideEvent = hideEvent;
+    }
+    
+    @ReactMethod
+	public void setMessageSentEvent(Boolean isSet) {
+	    messageSentEvent = isSet;
 	}
 
     @ReactMethod
@@ -386,6 +392,10 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                 if (globalMetadata != null) {
                     Log.d("Smooch", String.valueOf(globalMetadata));
                     message.setMetadata(getProperties(globalMetadata));
+                }
+                if (messageSentEvent) {
+                    Log.d("messageSent", "on MessageSent");
+                    sendEvent(mreactContext, "messageSent", null);
                 }
                 return message;
             }

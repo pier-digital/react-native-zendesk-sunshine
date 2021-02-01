@@ -22,6 +22,7 @@
     NSString *conversationDescription;
     BOOL hideConversation;
     BOOL sendHideEvent;
+    BOOL sendMessageSentEvent;
     id hideId;
 }
 @property (nonatomic, retain) NSString *someProperty;

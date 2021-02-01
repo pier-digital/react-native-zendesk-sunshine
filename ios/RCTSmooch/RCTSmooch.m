@@ -9,6 +9,7 @@
 
 @interface SmoochManager()
 - (void)sendEvent;
+- (void)sendMessageSentEvent;
 @end
 
 @implementation MyConversationDelegate
@@ -18,6 +19,9 @@
     NSLog(@"Smooch willSendMessage with %@", message);
     NSLog(@"Metadata", metadata);
     [message setMetadata:metadata];
+    if (sendMessageSentEvent) {
+      [hideId sendMessageSentEvent];
+    }
     return message;
 }
 
@@ -120,6 +124,16 @@
     return sendHideEvent;
 }
 
+- (void)setMessageSentEvent:(BOOL)isSet {
+    NSLog(@"Smooch setMessageSentEvent");
+    sendMessageSentEvent = isSet;
+}
+
+- (BOOL)getMessageSentEvent {
+    NSLog(@"Smooch getMessageSentEvent");
+    return sendMessageSentEvent;
+}
+
 - (void)setTitle:(NSString *)title description:(NSString *)description {
     NSLog(@"Smooch setTitle");
     conversationTitle = title;
@@ -171,7 +185,7 @@ RCT_EXPORT_MODULE();
 
 - (NSArray<NSString *> *)supportedEvents
 {
-  return @[@"unreadCountUpdate"];
+  return @[@"unreadCountUpdate", @"messageSent"];
 }
 
 - (BOOL)isInteger:(NSString *)toCheck {
@@ -194,6 +208,11 @@ RCT_EXPORT_MODULE();
     } else {
         [self sendEventWithName:@"unreadCountUpdate" body:@{@"name":@""}];
     }
+}
+
+- (void)sendMessageSentEvent {
+    NSLog(@"sendMessageSentEvent");
+    [self sendEventWithName:@"messageSent" body:@{@"name":@""}];
 }
 
 RCT_EXPORT_METHOD(show) {
@@ -510,6 +529,12 @@ RCT_EXPORT_METHOD(setSendHideEvent:(BOOL)hideEvent) {
   NSLog(@"Smooch setSendHideEvent");
   MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
   [myconversation setSendHideEvent:hideEvent];
+};
+
+RCT_EXPORT_METHOD(setMessageSentEvent:(BOOL)isSet) {
+  NSLog(@"Smooch setMessageSentEvent");
+  MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
+  [myconversation setMessageSentEvent:isSet];
 };
 
 RCT_EXPORT_METHOD(setRead:(NSString *)msgId) {
