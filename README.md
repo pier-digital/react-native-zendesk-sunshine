@@ -35,7 +35,7 @@ yarn install
 
 ## IOS
 
- * This uses Smooch IOS SDK v7.1.2
+ * This upgraded to Smooch IOS SDK v10.0.0
 
  * You must also have your React dependencies defined in your Podfile as described [here](http://facebook.github.io/react-native/releases/0.31/docs/troubleshooting.html#missing-libraries-for-react), for example:
 
@@ -50,7 +50,8 @@ yarn install
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Initialize Smooch - these instructions are also available on [app.smooch.io](https://app.smooch.io)
-    [Smooch initWithSettings:[SKTSettings settingsWithAppId:@"YOUR_APP_ID"] completionHandler:^(NSError * _Nullable error, NSDictionary * _Nullable userInfo) {
+    SKTSettings *customSettings = [SKTSettings settingsWithIntegrationId:@"YOUR INTEGRATION ID"];
+    [Smooch initWithSettings:customSettings completionHandler:^(NSError * _Nullable error, NSDictionary * _Nullable userInfo) {
         NSLog(@"Smooch initWithSettings");
         // Your code after init is complete
     }];

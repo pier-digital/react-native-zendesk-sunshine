@@ -42,4 +42,5 @@ dependencies {
     api 'io.smooch:core:8.+'
     api 'io.smooch:ui:8.+'
     implementation 'androidx.appcompat:appcompat:1.0.0'
+    implementation 'com.google.firebase:firebase-messaging'
 }
