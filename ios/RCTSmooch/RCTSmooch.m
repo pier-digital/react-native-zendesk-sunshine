@@ -234,6 +234,7 @@ RCT_EXPORT_METHOD(close) {
 RCT_EXPORT_METHOD(login:(NSString*)externalId jwt:(NSString*)jwt resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
   NSLog(@"Smooch Login");
 
+  dispatch_async(dispatch_get_main_queue(), ^{
       [Smooch login:externalId jwt:jwt completionHandler:^(NSError * _Nullable error, NSDictionary * _Nullable userInfo) {
           if (error) {
               NSLog(@"Error Login");
@@ -248,6 +249,7 @@ RCT_EXPORT_METHOD(login:(NSString*)externalId jwt:(NSString*)jwt resolver:(RCTPr
               resolve(userInfo);
           }
       }];
+  });
 };
 
 RCT_EXPORT_METHOD(logout:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
@@ -271,7 +273,7 @@ RCT_EXPORT_METHOD(logout:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRej
 RCT_EXPORT_METHOD(setUserProperties:(NSDictionary*)options) {
   NSLog(@"Smooch setUserProperties with %@", options);
 
-  [[SKTUser currentUser] addMetadata:options];
+  [[SKTUser currentUser] addProperties:options];
 };
 
 RCT_EXPORT_METHOD(getUserId:(RCTPromiseResolveBlock)resolve
@@ -387,7 +389,7 @@ RCT_EXPORT_METHOD(getMessages:(RCTPromiseResolveBlock)resolve
                     }
                 }
                 if (newMessage[@"location_display_name"] == nil) {
-                    newMessage[@"location_display_name"] = [message displayName]; // name
+                    newMessage[@"location_display_name"] = [message name];
                 }
               }
           }
@@ -439,7 +441,7 @@ RCT_EXPORT_METHOD(getIncomeMessages:(RCTPromiseResolveBlock)resolve
               if (options[@"location_display_name"] != nil) {
                 newMessage[@"location_display_name"] = options[@"location_display_name"];
               } else {
-                newMessage[@"location_display_name"] = [message displayName]; // name
+                newMessage[@"location_display_name"] = [message name];
               }
             } // chat_type of employee and employee_name is not real anymore
           }
@@ -461,7 +463,7 @@ RCT_EXPORT_METHOD(getMessagesMetadata:(NSDictionary *)metadata resolver:(RCTProm
       NSDictionary *options = [message metadata];
       if ([options[@"short_property_code"] isEqualToString:metadata[@"short_property_code"]]) {
           NSMutableDictionary *newMessage = [[NSMutableDictionary alloc] init];
-          newMessage[@"name"] = [message displayName]; // name in < 9
+          newMessage[@"name"] = [message name]; // displayName
           newMessage[@"text"] = [message text];
           newMessage[@"isFromCurrentUser"] = @([message isFromCurrentUser]);
           newMessage[@"messageId"] = [message messageId];
@@ -471,7 +473,7 @@ RCT_EXPORT_METHOD(getMessagesMetadata:(NSDictionary *)metadata resolver:(RCTProm
               if (options[@"location_display_name"] != nil) {
                 newMessage[@"location_display_name"] = options[@"location_display_name"];
               } else {
-                newMessage[@"location_display_name"] = [message displayName]; // name
+                newMessage[@"location_display_name"] = [message name];
               }
           }
           NSString *msgId = [message messageId];
@@ -552,8 +554,8 @@ RCT_EXPORT_METHOD(setMetadata:(NSDictionary *)options) {
 RCT_EXPORT_METHOD(updateConversation:(NSString *)title description:(NSString *)description resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
   NSLog(@"Smooch updateConversation with %@", description);
-  // MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
-  // [myconversation setTitle:title description:description];
+  MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
+  [myconversation setTitle:title description:description];
   resolve(@(YES));
 };
 

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.icu.util.Calendar;
 import java.util.TimeZone;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -49,6 +50,8 @@ import io.smooch.core.ConversationDelegateAdapter;
 import io.smooch.core.ConversationDetails;
 import io.smooch.core.LogoutResult;
 import io.smooch.core.LoginResult;
+import io.smooch.core.FcmService;
+import static io.smooch.core.FcmService.*;
 
 public class ReactNativeSmooch extends ReactContextBaseJavaModule {
 
@@ -367,6 +370,25 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
         }
     }
 
+    @ReactMethod
+    public void setFirebaseCloudMessagingToken(String fcmToken) {
+        Smooch.setFirebaseCloudMessagingToken(fcmToken);
+    }
+    @ReactMethod
+    public void triggerNotification(ReadableMap remoteMessage) {
+        try {
+            HashMap<String, Object> map = remoteMessage.toHashMap();
+            HashMap<String, String> newMap = new HashMap<String, String>();
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                if (entry.getValue() instanceof String) {
+                    newMap.put(entry.getKey(), entry.getValue().toString());
+                }
+            }
+            triggerSmoochNotification(newMap, mreactContext);
+        } catch (Exception e) {
+            Log.d("Notification ERROR", String.valueOf(e));
+        }
+    }
     private Map<String, Object> getProperties(ReadableMap properties) {
         ReadableMapKeySetIterator iterator = properties.keySetIterator();
         Map<String, Object> props = new HashMap<>();
