@@ -260,7 +260,7 @@ RCT_EXPORT_METHOD(login:(NSString*)externalId jwt:(NSString*)jwt resolver:(RCTPr
   dispatch_after(time, dispatch_get_main_queue(), ^{
         if (!done) {
           done = YES;
-        resolve(NULL);
+          resolve(NULL);
         }
   });
 };
@@ -270,6 +270,7 @@ RCT_EXPORT_METHOD(logout:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRej
 
   dispatch_async(dispatch_get_main_queue(), ^{
       [Smooch logoutWithCompletionHandler:^(NSError * _Nullable error, NSDictionary * _Nullable userInfo) {
+          done = YES;
           if (error) {
               reject(
                      userInfo[SKTErrorCodeIdentifier],
