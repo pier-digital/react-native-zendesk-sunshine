@@ -228,12 +228,17 @@ RCT_EXPORT_METHOD(close) {
   NSLog(@"Smooch Close");
 
   dispatch_async(dispatch_get_main_queue(), ^{
-      [Smooch close];
-    });
+    [Smooch close];
+  });
 };
 
 RCT_EXPORT_METHOD(login:(NSString*)externalId jwt:(NSString*)jwt resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
   NSLog(@"Smooch Login");
+  // set timeout of 10 seconds and return NULL
+  dispatch_time_t time =  dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10.0 * NSEC_PER_SEC));
+  dispatch_after(time, dispatch_get_main_queue(), ^{
+        resolve(NULL);
+  });
 
   dispatch_async(dispatch_get_main_queue(), ^{
       [Smooch login:externalId jwt:jwt completionHandler:^(NSError * _Nullable error, NSDictionary * _Nullable userInfo) {
@@ -255,6 +260,11 @@ RCT_EXPORT_METHOD(login:(NSString*)externalId jwt:(NSString*)jwt resolver:(RCTPr
 
 RCT_EXPORT_METHOD(logout:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
   NSLog(@"Smooch Logout");
+  // set timeout of 10 seconds and return NULL
+  dispatch_time_t time =  dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10.0 * NSEC_PER_SEC));
+  dispatch_after(time, dispatch_get_main_queue(), ^{
+        resolve(NULL);
+  });
 
   dispatch_async(dispatch_get_main_queue(), ^{
       [Smooch logoutWithCompletionHandler:^(NSError * _Nullable error, NSDictionary * _Nullable userInfo) {
@@ -584,8 +594,8 @@ RCT_EXPORT_METHOD(updateConversation:(NSString *)title description:(NSString *)d
 };
 
 RCT_EXPORT_METHOD(setFirebaseCloudMessagingToken:(NSString*)token) {
-    NSData* tokenData = [token dataUsingEncoding:NSUTF8StringEncoding];
     NSLog(@"Smooch setFirebaseCloudMessagingToken %@", token);
+    NSData *tokenData = [token dataUsingEncoding:NSUTF8StringEncoding];
     [Smooch setPushToken:(tokenData)];
 };
 // Version 9.0.0
