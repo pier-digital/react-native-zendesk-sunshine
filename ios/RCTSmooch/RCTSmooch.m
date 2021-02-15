@@ -163,7 +163,8 @@
 @implementation NotificationManager
 
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler {
-    if (notification.request.content.userInfo[SKTPushNotificationIdentifier] != nil) { [[Smooch userNotificationCenterDelegate] userNotificationCenter:center willPresentNotification:notification withCompletionHandler:completionHandler];
+    if (notification.request.content.userInfo[SKTPushNotificationIdentifier] != nil) {
+        [[Smooch userNotificationCenterDelegate] userNotificationCenter:center willPresentNotification:notification withCompletionHandler:completionHandler];
         return;
 
     }
@@ -270,6 +271,29 @@ RCT_EXPORT_METHOD(logout:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRej
   });
 };
 
+RCT_EXPORT_METHOD(setNotificationCategory:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    NSLog(@"Smooch setNotificationCategory");
+    UNUserNotificationCenter* center = [UNUserNotificationCenter currentNotificationCenter];
+    [center requestAuthorizationWithOptions:(UNAuthorizationOptionAlert + UNAuthorizationOptionBadge + UNAuthorizationOptionSound)
+       completionHandler:^(BOOL granted, NSError * _Nullable error) {
+        if (!granted) {
+            NSLog(@"Smooch setNotificationCategory not granted");
+            resolve(NULL);
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_9_x_Max) {
+                [[UNUserNotificationCenter currentNotificationCenter] setNotificationCategories:[Smooch userNotificationCategories]];
+            } else {
+                UIUserNotificationSettings* settings = [UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeBadge | UIUserNotificationTypeSound | UIUserNotificationTypeAlert) categories:[Smooch userNotificationCategories]];
+                [[UIApplication sharedApplication] registerUserNotificationSettings:settings];
+            }
+            [[UIApplication sharedApplication] registerForRemoteNotifications];
+            NSLog(@"Smooch setNotificationCategory categories");
+            resolve(NULL);
+        });
+    }];
+};
 RCT_EXPORT_METHOD(setUserProperties:(NSDictionary*)options) {
   NSLog(@"Smooch setUserProperties with %@", options);
 
@@ -559,6 +583,11 @@ RCT_EXPORT_METHOD(updateConversation:(NSString *)title description:(NSString *)d
   resolve(@(YES));
 };
 
+RCT_EXPORT_METHOD(setFirebaseCloudMessagingToken:(NSString*)token) {
+    NSData* tokenData = [token dataUsingEncoding:NSUTF8StringEncoding];
+    NSLog(@"Smooch setFirebaseCloudMessagingToken %@", token);
+    [Smooch setPushToken:(tokenData)];
+};
 // Version 9.0.0
 //
 //RCT_EXPORT_METHOD(updateConversation:(NSString*)title description:(NSString*)description  resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
