@@ -28,15 +28,18 @@
 - (nullable SKTMessage *)conversation:(SKTConversation *)conversation willDisplayMessage:(SKTMessage *)message {
     NSLog(@"Smooch willDisplay with %@", message);
     NSLog(@"Metadata", metadata);
+    MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
+    NSString *globalUserId = [myconversation getGlobalUserId];
     NSUserDefaults *db = [NSUserDefaults standardUserDefaults];
     if (message != nil) {
       NSDictionary *options = message.metadata;
       if ([options[@"short_property_code"] isEqualToString:metadata[@"short_property_code"]]) {
         NSString *msgId = [message messageId];
         if (msgId != nil) {
-            BOOL isRead = [db boolForKey:msgId]; // return NO if not exists
+            NSString *localMsgId = globalUserId == nil ? msgId : [NSString stringWithFormat:@"%@%@", globalUserId, msgId];
+            BOOL isRead = [db boolForKey:localMsgId]; // return NO if not exists
             if (!isRead) {
-              [db setBool:@(YES) forKey:msgId];
+              [db setBool:@(YES) forKey:localMsgId];
               [db synchronize];
             }
         }
@@ -112,6 +115,16 @@
 - (NSDictionary *)getMetadata {
     NSLog(@"Smooch getMetadata");
     return metadata;
+}
+
+- (NSString *)getGlobalUserId {
+    NSLog(@"Smooch getGlobalUserId");
+    return globalUserId;
+}
+
+- (void)setGlobalUserId:(NSString *)userId {
+    NSLog(@"Smooch setGlobalUserId");
+    globalUserId = userId;
 }
 
 - (void)setSendHideEvent:(BOOL)hideEvent {
@@ -250,6 +263,7 @@ RCT_EXPORT_METHOD(login:(NSString*)externalId jwt:(NSString*)jwt resolver:(RCTPr
           else {
               MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
               [myconversation setControllerState:self];
+              [myconversation setGlobalUserId:externalId];
               resolve(userInfo);
           }
       }];
@@ -278,6 +292,8 @@ RCT_EXPORT_METHOD(logout:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRej
                      error);
           }
           else {
+              MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
+              [myconversation setGlobalUserId:nil];
               resolve(userInfo);
           }
       }];
@@ -342,6 +358,8 @@ RCT_EXPORT_METHOD(moreMessages) {
 RCT_EXPORT_METHOD(getGroupCounts:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
   NSLog(@"Smooch getGroupCounts");
+  MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
+  NSString *globalUserId = [myconversation getGlobalUserId];
   NSUserDefaults *db = [NSUserDefaults standardUserDefaults];
   NSInteger totalUnreadCount = 0;
 
@@ -363,7 +381,8 @@ RCT_EXPORT_METHOD(getGroupCounts:(RCTPromiseResolveBlock)resolve
                       newMessage[name] = @(0);
                   }
                   if (![message isFromCurrentUser]) {
-                    BOOL isRead = [db boolForKey:msgId];
+                      NSString *localMsgId = globalUserId == nil ? msgId : [NSString stringWithFormat:@"%@%@", globalUserId, msgId];
+                    BOOL isRead = [db boolForKey:localMsgId];
                     if (!isRead) {
                         totalUnreadCount += 1;
                         NSNumber *count = newMessage[name];
@@ -393,9 +412,62 @@ RCT_EXPORT_METHOD(getGroupCounts:(RCTPromiseResolveBlock)resolve
   resolve(groups);
 };
 
+RCT_EXPORT_METHOD(getGroupCountsIds:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+  NSLog(@"Smooch getGroupCountsIds");
+  MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
+  NSString *globalUserId = [myconversation getGlobalUserId];
+  NSUserDefaults *db = [NSUserDefaults standardUserDefaults];
+
+  NSArray *messages = [Smooch conversation].messages;
+  NSMutableDictionary *newMessage = [[NSMutableDictionary alloc] init];
+  NSDate *now = [NSDate date];
+
+  for (id message in messages) {
+      if (message != nil) {
+          NSDictionary *options = [message metadata];
+          if (options != nil) {
+              NSString *msgId = [message messageId];
+              if (msgId != nil) {
+                  NSDate *msgDate = [message date];
+                  int lengthInDays = [self daysBetween:msgDate and:now];
+                  if (lengthInDays < 120) {
+                  if (![message isFromCurrentUser]) {
+                    NSString *localMsgId = globalUserId == nil ? msgId : [NSString stringWithFormat:@"%@%@", globalUserId, msgId];
+
+                    BOOL isRead = [db boolForKey:localMsgId];
+                    if (!isRead) {
+                        newMessage[msgId] = @(NO);
+                    } else {
+                        newMessage[msgId] = @(YES);
+                    }
+                  } else {
+                    newMessage[msgId] = @(YES);
+                  }
+                }
+              }
+          }
+      }
+  }
+
+  NSMutableArray *groups = [[NSMutableArray alloc] init];
+
+  for (NSString *key in newMessage) {
+      BOOL value = [newMessage[key] boolValue];
+      NSMutableDictionary *tMsg = [[NSMutableDictionary alloc] init];
+      tMsg[@"msgId"] = key;
+      tMsg[@"isRead"] = @(value);
+      [groups addObject: tMsg];
+  }
+
+  resolve(groups);
+};
+
 RCT_EXPORT_METHOD(getMessages:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
   NSLog(@"Smooch getMessages");
+  MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
+  NSString *globalUserId = [myconversation getGlobalUserId];
   NSUserDefaults *db = [NSUserDefaults standardUserDefaults];
 
   NSMutableArray *newMessages = [[NSMutableArray alloc] init];
@@ -441,7 +513,8 @@ RCT_EXPORT_METHOD(getMessages:(RCTPromiseResolveBlock)resolve
           if ([message isFromCurrentUser]) {
               newMessage[@"is_read"] = @(YES);
           } else if (msgId != nil) {
-              BOOL isRead = [db boolForKey:msgId];
+              NSString *localMsgId = globalUserId == nil ? msgId : [NSString stringWithFormat:@"%@%@", globalUserId, msgId];
+              BOOL isRead = [db boolForKey:localMsgId];
               newMessage[@"is_read"] = @(isRead);
           } else {
               newMessage[@"is_read"] = @(NO);
@@ -455,6 +528,8 @@ RCT_EXPORT_METHOD(getMessages:(RCTPromiseResolveBlock)resolve
 RCT_EXPORT_METHOD(getIncomeMessages:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
   NSLog(@"Smooch getIncomeMessages");
+  MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
+  NSString *globalUserId = [myconversation getGlobalUserId];
   NSUserDefaults *db = [NSUserDefaults standardUserDefaults];
 
   NSMutableArray *newMessages = [[NSMutableArray alloc] init];
@@ -471,7 +546,8 @@ RCT_EXPORT_METHOD(getIncomeMessages:(RCTPromiseResolveBlock)resolve
           NSString *msgId = [message messageId];
           if (msgId != nil) {
             newMessage[@"id"] = msgId; // example: 5fbdc1a608b132000c691500
-            BOOL isRead = [db boolForKey:msgId];
+            NSString *localMsgId = globalUserId == nil ? msgId : [NSString stringWithFormat:@"%@%@", globalUserId, msgId];
+            BOOL isRead = [db boolForKey:localMsgId];
             newMessage[@"is_read"] = @(isRead);
           } else {
             newMessage[@"id"] = @"0";
@@ -498,6 +574,8 @@ RCT_EXPORT_METHOD(getIncomeMessages:(RCTPromiseResolveBlock)resolve
 RCT_EXPORT_METHOD(getMessagesMetadata:(NSDictionary *)metadata resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
   NSLog(@"Smooch getMessagesMetadata");
+  MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
+  NSString *globalUserId = [myconversation getGlobalUserId];
   NSUserDefaults *db = [NSUserDefaults standardUserDefaults];
 
   NSMutableArray *newMessages = [[NSMutableArray alloc] init];
@@ -524,7 +602,9 @@ RCT_EXPORT_METHOD(getMessagesMetadata:(NSDictionary *)metadata resolver:(RCTProm
           if ([message isFromCurrentUser]) {
               newMessage[@"isRead"] = @(YES);
           } else if (msgId != nil) {
-              BOOL isRead = [db boolForKey:msgId];
+              NSString *localMsgId = globalUserId == nil ? msgId : [NSString stringWithFormat:@"%@%@", globalUserId, msgId];
+
+              BOOL isRead = [db boolForKey:localMsgId];
               newMessage[@"isRead"] = @(isRead);
           } else {
               newMessage[@"isRead"] = @(NO);
@@ -583,8 +663,11 @@ RCT_EXPORT_METHOD(setMessageSentEvent:(BOOL)isSet) {
 
 RCT_EXPORT_METHOD(setRead:(NSString *)msgId) {
   NSLog(@"Smooch setRead with %@", msgId);
+  MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
+  NSString *globalUserId = [myconversation getGlobalUserId];
   NSUserDefaults *db = [NSUserDefaults standardUserDefaults];
-  [db setBool:@(YES) forKey:msgId];
+  NSString *localMsgId = globalUserId == nil ? msgId : [NSString stringWithFormat:@"%@%@", globalUserId, msgId];
+  [db setBool:@(YES) forKey:localMsgId];
   [db synchronize];
 };
 

@@ -17,6 +17,7 @@
 
 @interface MyConversationDelegate : NSObject <SKTConversationDelegate> {
     NSDictionary *metadata;
+    NSString *globalUserId;
     NSString *someProperty;
     NSString *conversationTitle;
     NSString *conversationDescription;

@@ -59,6 +59,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
     private ReadableMap globalMetadata = null;
     private Boolean sendHideEvent = false;
     private Boolean messageSentEvent = false;
+	private String globalUserId = null;
 
     @Override
     public String getName() {
@@ -79,7 +80,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void login(String userId, String jwt, final Promise promise) {
+    public void login(final String userId, final String jwt, final Promise promise) {
         Smooch.login(userId, jwt, new SmoochCallback<LoginResult>() {
             @Override
             public void run(Response<LoginResult> response) {
@@ -90,7 +91,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                 }
                 setMessageDelegate();
                 setConversationDelegate();
-
+				globalUserId = userId;
                 promise.resolve(null);
               }
             }
@@ -116,6 +117,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                     promise.reject("" + response.getStatus(), response.getError());
                     return;
                 }
+				globalUserId = null;
                 promise.resolve(null);
             }
         });
@@ -144,6 +146,48 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void getGroupCountsIds(final Promise promise) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getReactApplicationContext());
+        Date now = Calendar.getInstance().getTime();
+        List<Message> messages = Smooch.getConversation().getMessages();
+        Map<String, Boolean> map = new HashMap();
+        for (Message message : messages) {
+            if (message.getMetadata() != null) {
+                String msgId = message.getId();
+                if (msgId != null) {
+                    Date msgDate = message.getDate();
+                    long days = (now.getTime() - msgDate.getTime())/(24*60*60*1000);
+                    if (days < 120) {
+                        if (!message.isFromCurrentUser()) {
+						    String localMsgId = globalUserId == null ? msgId : globalUserId.concat(msgId);
+                            Boolean isRead = sharedPreferences.getBoolean(localMsgId, false);
+                            if (!isRead) {
+                                map.put(msgId, false);
+                            } else {
+                                map.put(msgId, true);
+                            }
+                        } else {
+                            map.put(msgId, true);
+                        }
+                    }
+                }
+            }
+        }
+
+        WritableArray promiseArray = Arguments.createArray();
+
+        for (Map.Entry<String, Boolean> entry : map.entrySet()) {
+            String name = entry.getKey();
+            Boolean value = entry.getValue();
+            WritableMap nMap = Arguments.createMap();
+            nMap.putString("msgId", name);
+            nMap.putBoolean("isRead", value);
+            promiseArray.pushMap(nMap);
+        }
+        promise.resolve(promiseArray);
+    }
+
+    @ReactMethod
     public void getGroupCounts(final Promise promise) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getReactApplicationContext());
         Integer totalUnreadCount = 0;
@@ -162,7 +206,8 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                         map.put(name, 0);
                     }
 					if (!message.isFromCurrentUser()) {
-	                    Boolean isRead = sharedPreferences.getBoolean(msgId, false);
+					    String localMsgId = globalUserId == null ? msgId : globalUserId.concat(msgId);
+	                    Boolean isRead = sharedPreferences.getBoolean(localMsgId, false);
 	                    if (!isRead) {
 	                        totalUnreadCount += 1;
 	                        Integer count = map.get(name);
@@ -236,7 +281,8 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                 if (message.isFromCurrentUser()) {
                     map.putBoolean("is_read", true);
                 } else if (msgId != null) {
-                    Boolean isRead = sharedPreferences.getBoolean(msgId, false);
+				    String localMsgId = globalUserId == null ? msgId : globalUserId.concat(msgId);
+                    Boolean isRead = sharedPreferences.getBoolean(localMsgId, false);
                     map.putBoolean("is_read", isRead);
                 } else {
                     map.putBoolean("is_read", false);
@@ -263,7 +309,8 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                 String msgId = message.getId();
                 if (msgId != null) {
                     map.putString("id", msgId); // example: 5fbdc1a608b132000c691500
-                    Boolean isRead = sharedPreferences.getBoolean(msgId, false);
+					String localMsgId = globalUserId == null ? msgId : globalUserId.concat(msgId);
+                    Boolean isRead = sharedPreferences.getBoolean(localMsgId, false);
                     map.putBoolean("is_read", isRead);
                 } else {
                     map.putString("id", "0" );
@@ -308,7 +355,8 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                 if (message.isFromCurrentUser()) {
                     map.putBoolean("isRead", true);
                 } else if (msgId != null) {
-                    Boolean isRead = sharedPreferences.getBoolean(msgId, false);
+				    String localMsgId = globalUserId == null ? msgId : globalUserId.concat(msgId);
+                    Boolean isRead = sharedPreferences.getBoolean(localMsgId, false);
                     map.putBoolean("isRead", isRead);
                 } else {
                     map.putBoolean("isRead", false);
@@ -339,7 +387,8 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getReactApplicationContext());
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(msgId, true);
+		String localMsgId = globalUserId == null ? msgId : globalUserId.concat(msgId);
+        editor.putBoolean(localMsgId, true);
         editor.apply();
     }
 
@@ -428,10 +477,11 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                 if (globalMetadata != null && message != null && message.getMetadata() != null && message.getMetadata().get("short_property_code").equals(getProperties(globalMetadata).get("short_property_code"))) {
                     String msgId = message.getId();
                     if (msgId != null) {
-                        Boolean isRead = sharedPreferences.getBoolean(msgId, false);
+					    String localMsgId = globalUserId == null ? msgId : globalUserId.concat(msgId);
+                        Boolean isRead = sharedPreferences.getBoolean(localMsgId, false);
                         if (!isRead) {
                             SharedPreferences.Editor editor = sharedPreferences.edit();
-                            editor.putBoolean(msgId, true);
+                            editor.putBoolean(localMsgId, true);
                             editor.apply();
                         }
                     }
