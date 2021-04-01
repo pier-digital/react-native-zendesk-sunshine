@@ -234,6 +234,20 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
         }
         promise.resolve(promiseArray);
     }
+	
+	@ReactMethod
+	public void getPushNotificationInfo(final Promise promise) {
+		WritableMap map = Arguments.createMap();
+		map.putString("short_property_code", "");
+		map.putString("name", "");
+		map.putString("location_display_name", "");
+		promise.resolve(map);
+	}
+	
+	@ReactMethod
+	public void clearPushNotificationInfo(final Promise promise) {
+		promise.resolve(true);
+	}
 
     @ReactMethod
     public void getMessages(final Promise promise) {
