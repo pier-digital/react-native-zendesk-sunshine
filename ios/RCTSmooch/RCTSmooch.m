@@ -17,7 +17,7 @@
 
 - (SKTMessage *)conversation:(SKTConversation *)conversation willSendMessage:(SKTMessage *)message {
     NSLog(@"Smooch willSendMessage with %@", message);
-    NSLog(@"Metadata", metadata);
+    NSLog(@"Metadata %@", metadata);
     [message setMetadata:metadata];
     if (sendMessageSentEvent) {
       [hideId sendMessageSentEvent];
@@ -27,7 +27,7 @@
 
 - (nullable SKTMessage *)conversation:(SKTConversation *)conversation willDisplayMessage:(SKTMessage *)message {
     NSLog(@"Smooch willDisplay with %@", message);
-    NSLog(@"Metadata", metadata);
+    NSLog(@"Metadata %@", metadata);
     MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
     NSString *globalUserId = [myconversation getGlobalUserId];
     NSUserDefaults *db = [NSUserDefaults standardUserDefaults];
@@ -51,17 +51,32 @@
 }
 
 - (BOOL)conversation:(SKTConversation *)conversation shouldShowInAppNotificationForMessage:(SKTMessage *)message {
-    NSDictionary *options = message.metadata;
-    NSLog(@"Smooch shouldShowInAppNotificationForMessage with %@", options);
-    conversationTitle = @"Conversation";
-    conversationDescription = options[@"location_display_name"];
-    metadata = options;
+    NSDictionary *meta = message.metadata;
+    NSLog(@"Smooch shouldShowInAppNotificationForMessage with %@", meta);
+    // just return true and dont save anything
+    return true;
+}
+
+- (BOOL)conversation:(SKTConversation *)conversation shouldShowForAction:(SKTAction)action withInfo:(nullable NSDictionary *)info {
+    NSLog(@"Smooch shouldShowForAction %@", info);
+    MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
+    if (action == SKTActionInAppNotificationTapped || action == SKTActionPushNotificationTapped) {
+        if (info[@"message"] != nil && info[@"message"][@"metadata"] != nil ) {
+            NSString *description = info[@"message"][@"metadata"][@"location_display_name"];
+            NSLog(@"Smooch shouldShowForAction description %@", description);
+            NSDictionary *meta = info[@"message"][@"metadata"];
+            NSLog(@"Smooch shouldShowForAction meta %@", meta);
+            [myconversation setMetadata:meta];
+            [myconversation setTitle:@"Conversation" description:description];
+        }
+    }
 
     return true;
 }
 
 - (void)conversation:(SKTConversation *)conversation willShowViewController:(UIViewController *)viewController {
     if (viewController != nil && conversationTitle != nil && conversationDescription != nil) {
+        // [[Smooch conversation] sendMessage:[[SKTMessage alloc] initWithText:@"willShowViewController!"]];
         UINavigationItem *navigationItem = viewController.navigationItem;
         NSString *fullTitle = [NSString stringWithFormat:@"%@ (%@)", conversationTitle, conversationDescription];
         UIStackView *titleView = [[UIStackView alloc] init];
@@ -170,28 +185,28 @@
 @end
 
 
-@interface NotificationManager
-@end
+//@interface NotificationManager
+//@end
 
-@implementation NotificationManager
-
-- (void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler {
-    if (notification.request.content.userInfo[SKTPushNotificationIdentifier] != nil) {
-        [[Smooch userNotificationCenterDelegate] userNotificationCenter:center willPresentNotification:notification withCompletionHandler:completionHandler];
-        return;
-
-    }
-}
-
-- (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void (^)())completionHandler {
-    if (response.notification.request.content.userInfo[SKTPushNotificationIdentifier] != nil) {
-        [[Smooch userNotificationCenterDelegate] userNotificationCenter:center didReceiveNotificationResponse:response withCompletionHandler:completionHandler];
-        return;
-
-    }
-}
-
-@end
+//@implementation NotificationManager
+//
+//- (void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler {
+//    if (notification.request.content.userInfo[SKTPushNotificationIdentifier] != nil) {
+//        [[Smooch userNotificationCenterDelegate] userNotificationCenter:center willPresentNotification:notification withCompletionHandler:completionHandler];
+//        return;
+//
+//    }
+//}
+//
+//- (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void (^)())completionHandler {
+//    if (response.notification.request.content.userInfo[SKTPushNotificationIdentifier] != nil) {
+//        [[Smooch userNotificationCenterDelegate] userNotificationCenter:center didReceiveNotificationResponse:response withCompletionHandler:completionHandler];
+//        return;
+//
+//    }
+//}
+//
+//@end
 
 @implementation SmoochManager
 
@@ -316,7 +331,7 @@ RCT_EXPORT_METHOD(setNotificationCategory:(RCTPromiseResolveBlock)resolve
         if (!granted) {
             NSLog(@"Smooch setNotificationCategory not granted");
             resolve(NULL);
-        }
+        } else {
         dispatch_async(dispatch_get_main_queue(), ^{
             if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_9_x_Max) {
                 [[UNUserNotificationCenter currentNotificationCenter] setNotificationCategories:[Smooch userNotificationCategories]];
@@ -328,6 +343,7 @@ RCT_EXPORT_METHOD(setNotificationCategory:(RCTPromiseResolveBlock)resolve
             NSLog(@"Smooch setNotificationCategory categories");
             resolve(NULL);
         });
+        }
     }];
 };
 RCT_EXPORT_METHOD(setUserProperties:(NSDictionary*)options) {
@@ -462,6 +478,45 @@ RCT_EXPORT_METHOD(getGroupCountsIds:(RCTPromiseResolveBlock)resolve
 
   resolve(groups);
 };
+
+// only IOS needs this
+RCT_EXPORT_METHOD(getPushNotificationInfo:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+  NSLog(@"Smooch getPushNotificationInfo");
+  NSUserDefaults *db = [NSUserDefaults standardUserDefaults];
+  NSString *shortCode = [db valueForKey:@"shortCode"];
+  NSString *name = [db valueForKey:@"name"];
+  NSString *title = [db valueForKey:@"locationDisplayName"];
+  NSMutableDictionary *newMessage = [[NSMutableDictionary alloc] init];
+  if (shortCode == nil) {
+      newMessage[@"short_property_code"] = @"";
+  } else {
+      newMessage[@"short_property_code"] = shortCode;
+  }
+  if (name == nil) {
+      newMessage[@"name"] = @"";
+  } else {
+      newMessage[@"name"] = name;
+  }
+  if (title == nil) {
+    newMessage[@"location_display_name"] = @"";
+  } else {
+    newMessage[@"location_display_name"] = title;
+  }
+  resolve(newMessage);
+}
+
+RCT_EXPORT_METHOD(clearPushNotificationInfo:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+  NSLog(@"Smooch clearPushNotificationInfo");
+  NSUserDefaults *db = [NSUserDefaults standardUserDefaults];
+  NSString *clear = @"";
+  [db setObject:clear forKey:@"shortCode"];
+  [db setObject:clear forKey:@"name"];
+  [db setObject:clear forKey:@"locationDisplayName"];
+  [db synchronize];
+  resolve(@(YES));
+}
 
 RCT_EXPORT_METHOD(getMessages:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
