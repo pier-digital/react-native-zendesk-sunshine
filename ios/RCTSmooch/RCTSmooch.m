@@ -176,7 +176,9 @@
         [Smooch conversation].delegate = self;
     }
     hideConversation = NO;
-    hideId = callEvent;
+    if (callEvent != nil) {
+        hideId = callEvent;
+    }
 }
 
 - (BOOL)getControllerState {
@@ -187,25 +189,60 @@
 
 //@interface NotificationManager
 //@end
-
-//@implementation NotificationManager
 //
+//@implementation NotificationManager
+
 //- (void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler {
-//    if (notification.request.content.userInfo[SKTPushNotificationIdentifier] != nil) {
+//   if (notification.request.content.userInfo[SKTPushNotificationIdentifier] != nil) {
+//       [[Smooch userNotificationCenterDelegate] userNotificationCenter:center willPresentNotification:notification withCompletionHandler:completionHandler];
+//       return;
+//
+//   }
+//}
+//-(void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler
+//  {
+//    NSDictionary *userInfo = notification.request.content.userInfo;
+//    NSLog(@"willPresentNotification %@", userInfo);
+//    if (userInfo[SKTPushNotificationIdentifier] != nil) {
+//      if (userInfo[@"conversationId"] != nil) {
 //        [[Smooch userNotificationCenterDelegate] userNotificationCenter:center willPresentNotification:notification withCompletionHandler:completionHandler];
 //        return;
-//
+//      }
 //    }
-//}
-//
+//    completionHandler(UNNotificationPresentationOptionSound | UNNotificationPresentationOptionAlert | UNNotificationPresentationOptionBadge);
+//  }
+
 //- (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void (^)())completionHandler {
-//    if (response.notification.request.content.userInfo[SKTPushNotificationIdentifier] != nil) {
-//        [[Smooch userNotificationCenterDelegate] userNotificationCenter:center didReceiveNotificationResponse:response withCompletionHandler:completionHandler];
+  //  if (response.notification.request.content.userInfo[SKTPushNotificationIdentifier] != nil) {
+  //      [[Smooch userNotificationCenterDelegate] userNotificationCenter:center didReceiveNotificationResponse:response withCompletionHandler:completionHandler];
+  //      return;
+
+  //  }
+//          NSUserDefaults *db = [NSUserDefaults standardUserDefaults];
+//         NSLog(@"didReceiveNotificationResponse");
+//       NSDictionary *userInfo = response.notification.request.content.userInfo;
+//       NSLog(@"didReceiveNotificationResponse %@", userInfo);
+//
+//      if (userInfo[SKTPushNotificationIdentifier] != nil) {
+//          NSLog(@"didReceiveNotificationResponse call Smooch UNPushNotificationTrigger");
+//          NSString *shortCode = userInfo[@"message"][@"metadata"][@"short_property_code"];
+//          NSString *name = userInfo[@"message"][@"name"];
+//          NSString *title = userInfo[@"message"][@"metadata"][@"location_display_name"];
+//          [db setObject:shortCode forKey:@"shortCode"];
+//          [db setObject:name forKey:@"name"];
+//          [db setObject:title forKey:@"locationDisplayName"];
+//          [db synchronize];
+//          NSDictionary *options = userInfo[@"message"][@"metadata"];
+//          MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
+//          [myconversation setMetadata:options];
+//
+//          [Smooch handlePushNotification:userInfo];
+//          [[Smooch userNotificationCenterDelegate] userNotificationCenter:center didReceiveNotificationResponse:response withCompletionHandler:completionHandler];
 //        return;
 //
-//    }
+//      }
+//    completionHandler();
 //}
-//
 //@end
 
 @implementation SmoochManager

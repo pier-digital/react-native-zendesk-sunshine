@@ -27,4 +27,7 @@
     id hideId;
 }
 @property (nonatomic, retain) NSString *someProperty;
++ (id)sharedManager;
+- (void)setMetadata:(NSDictionary *)options;
+- (void)setTitle:(NSString *)title description:(NSString *)description;
 @end
