@@ -61,13 +61,22 @@
     NSLog(@"Smooch shouldShowForAction %@", info);
     MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
     if (action == SKTActionInAppNotificationTapped || action == SKTActionPushNotificationTapped) {
-        if (info[@"message"] != nil && info[@"message"][@"metadata"] != nil ) {
-            NSString *description = info[@"message"][@"metadata"][@"location_display_name"];
-            NSLog(@"Smooch shouldShowForAction description %@", description);
-            NSDictionary *meta = info[@"message"][@"metadata"];
-            NSLog(@"Smooch shouldShowForAction meta %@", meta);
-            [myconversation setMetadata:meta];
-            [myconversation setTitle:@"Conversation" description:description];
+        if (info[@"message"] != nil) {
+            if (info[@"message"][@"message"] != nil && info[@"message"][@"message"][@"metadata"] != nil ) {
+                NSString *description = info[@"message"][@"message"][@"metadata"][@"location_display_name"];
+                NSLog(@"Double Smooch shouldShowForAction description %@", description);
+                NSDictionary *meta = info[@"message"][@"message"][@"metadata"];
+                NSLog(@"Double Smooch shouldShowForAction meta %@", meta);
+                [myconversation setMetadata:meta];
+                [myconversation setTitle:@"Conversation" description:description];
+            } else if (info[@"message"] != nil && info[@"message"][@"metadata"] != nil ) {
+                NSString *description = info[@"message"][@"metadata"][@"location_display_name"];
+                NSLog(@"Smooch shouldShowForAction description %@", description);
+                NSDictionary *meta = info[@"message"][@"metadata"];
+                NSLog(@"Smooch shouldShowForAction meta %@", meta);
+                [myconversation setMetadata:meta];
+                [myconversation setTitle:@"Conversation" description:description];
+            }
         }
     }
 
@@ -76,20 +85,20 @@
 
 - (void)conversation:(SKTConversation *)conversation willShowViewController:(UIViewController *)viewController {
     if (viewController != nil && conversationTitle != nil && conversationDescription != nil) {
-        // [[Smooch conversation] sendMessage:[[SKTMessage alloc] initWithText:@"willShowViewController!"]];
+        //  [[Smooch conversation] sendMessage:[[SKTMessage alloc] initWithText:@"willShowViewController!"]];
         UINavigationItem *navigationItem = viewController.navigationItem;
-        NSString *fullTitle = [NSString stringWithFormat:@"%@ (%@)", conversationTitle, conversationDescription];
+        // NSString *fullTitle = [NSString stringWithFormat:@"%@ (%@)", conversationTitle, conversationDescription];
         UIStackView *titleView = [[UIStackView alloc] init];
         titleView.axis = UILayoutConstraintAxisVertical;
 
         UILabel *titleLabel = [[UILabel alloc] init];
-        titleLabel.textAlignment = UITextAlignmentCenter;
+        titleLabel.textAlignment = NSTextAlignmentCenter;
         titleLabel.font = [UIFont systemFontOfSize:20];
         titleLabel.textColor = UIColor.darkGrayColor;
         titleLabel.text = conversationTitle;
 
         UILabel *subtitleLabel = [[UILabel alloc] init];
-        subtitleLabel.textAlignment = UITextAlignmentCenter;
+        subtitleLabel.textAlignment = NSTextAlignmentCenter;
         subtitleLabel.font = [UIFont systemFontOfSize:13];
         subtitleLabel.textColor = UIColor.darkGrayColor;
         subtitleLabel.text = conversationDescription;
@@ -98,8 +107,8 @@
         [titleView addArrangedSubview:subtitleLabel];
         [titleView sizeToFit];
 
-        // [navigationItem setTitle:fullTitle];
-        [navigationItem setTitleView:titleView];
+        [navigationItem setLeftBarButtonItems:nil animated:NO];
+        [navigationItem setTitleView:titleView ];
     }
 }
 
@@ -185,65 +194,6 @@
     return hideConversation;
 }
 @end
-
-
-//@interface NotificationManager
-//@end
-//
-//@implementation NotificationManager
-
-//- (void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler {
-//   if (notification.request.content.userInfo[SKTPushNotificationIdentifier] != nil) {
-//       [[Smooch userNotificationCenterDelegate] userNotificationCenter:center willPresentNotification:notification withCompletionHandler:completionHandler];
-//       return;
-//
-//   }
-//}
-//-(void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler
-//  {
-//    NSDictionary *userInfo = notification.request.content.userInfo;
-//    NSLog(@"willPresentNotification %@", userInfo);
-//    if (userInfo[SKTPushNotificationIdentifier] != nil) {
-//      if (userInfo[@"conversationId"] != nil) {
-//        [[Smooch userNotificationCenterDelegate] userNotificationCenter:center willPresentNotification:notification withCompletionHandler:completionHandler];
-//        return;
-//      }
-//    }
-//    completionHandler(UNNotificationPresentationOptionSound | UNNotificationPresentationOptionAlert | UNNotificationPresentationOptionBadge);
-//  }
-
-//- (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void (^)())completionHandler {
-  //  if (response.notification.request.content.userInfo[SKTPushNotificationIdentifier] != nil) {
-  //      [[Smooch userNotificationCenterDelegate] userNotificationCenter:center didReceiveNotificationResponse:response withCompletionHandler:completionHandler];
-  //      return;
-
-  //  }
-//          NSUserDefaults *db = [NSUserDefaults standardUserDefaults];
-//         NSLog(@"didReceiveNotificationResponse");
-//       NSDictionary *userInfo = response.notification.request.content.userInfo;
-//       NSLog(@"didReceiveNotificationResponse %@", userInfo);
-//
-//      if (userInfo[SKTPushNotificationIdentifier] != nil) {
-//          NSLog(@"didReceiveNotificationResponse call Smooch UNPushNotificationTrigger");
-//          NSString *shortCode = userInfo[@"message"][@"metadata"][@"short_property_code"];
-//          NSString *name = userInfo[@"message"][@"name"];
-//          NSString *title = userInfo[@"message"][@"metadata"][@"location_display_name"];
-//          [db setObject:shortCode forKey:@"shortCode"];
-//          [db setObject:name forKey:@"name"];
-//          [db setObject:title forKey:@"locationDisplayName"];
-//          [db synchronize];
-//          NSDictionary *options = userInfo[@"message"][@"metadata"];
-//          MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
-//          [myconversation setMetadata:options];
-//
-//          [Smooch handlePushNotification:userInfo];
-//          [[Smooch userNotificationCenterDelegate] userNotificationCenter:center didReceiveNotificationResponse:response withCompletionHandler:completionHandler];
-//        return;
-//
-//      }
-//    completionHandler();
-//}
-//@end
 
 @implementation SmoochManager
 
@@ -386,7 +336,8 @@ RCT_EXPORT_METHOD(setNotificationCategory:(RCTPromiseResolveBlock)resolve
 RCT_EXPORT_METHOD(setUserProperties:(NSDictionary*)options) {
   NSLog(@"Smooch setUserProperties with %@", options);
 
-  [[SKTUser currentUser] addProperties:options];
+    // [[SKTUser currentUser] addProperties:options];
+    [[SKTUser currentUser] addMetadata:options];
 };
 
 RCT_EXPORT_METHOD(getUserId:(RCTPromiseResolveBlock)resolve
@@ -597,7 +548,7 @@ RCT_EXPORT_METHOD(getMessages:(RCTPromiseResolveBlock)resolve
                     }
                 }
                 if (newMessage[@"location_display_name"] == nil) {
-                    newMessage[@"location_display_name"] = [message name];
+                    newMessage[@"location_display_name"] = [message displayName]; // displayName
                 }
               }
           }
@@ -653,7 +604,7 @@ RCT_EXPORT_METHOD(getIncomeMessages:(RCTPromiseResolveBlock)resolve
               if (options[@"location_display_name"] != nil) {
                 newMessage[@"location_display_name"] = options[@"location_display_name"];
               } else {
-                newMessage[@"location_display_name"] = [message name];
+                newMessage[@"location_display_name"] = [message displayName]; // displayName
               }
             } // chat_type of employee and employee_name is not real anymore
           }
@@ -677,7 +628,7 @@ RCT_EXPORT_METHOD(getMessagesMetadata:(NSDictionary *)metadata resolver:(RCTProm
       NSDictionary *options = [message metadata];
       if ([options[@"short_property_code"] isEqualToString:metadata[@"short_property_code"]]) {
           NSMutableDictionary *newMessage = [[NSMutableDictionary alloc] init];
-          newMessage[@"name"] = [message name]; // displayName
+          newMessage[@"name"] = [message displayName]; // displayName
           newMessage[@"text"] = [message text];
           newMessage[@"isFromCurrentUser"] = @([message isFromCurrentUser]);
           newMessage[@"messageId"] = [message messageId];
@@ -687,7 +638,7 @@ RCT_EXPORT_METHOD(getMessagesMetadata:(NSDictionary *)metadata resolver:(RCTProm
               if (options[@"location_display_name"] != nil) {
                 newMessage[@"location_display_name"] = options[@"location_display_name"];
               } else {
-                newMessage[@"location_display_name"] = [message name];
+                newMessage[@"location_display_name"] = [message displayName];  // displayName
               }
           }
           NSString *msgId = [message messageId];
@@ -783,29 +734,5 @@ RCT_EXPORT_METHOD(setFirebaseCloudMessagingToken:(NSString*)token) {
     NSData *tokenData = [token dataUsingEncoding:NSUTF8StringEncoding];
     [Smooch setPushToken:(tokenData)];
 };
-// Version 9.0.0
-//
-//RCT_EXPORT_METHOD(updateConversation:(NSString*)title description:(NSString*)description  resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
-//
-//  NSLog(@"Smooch updateConversation with %@", description);
-//
-//  NSString *conversationId = [Smooch conversation].conversationId;
-//  if (conversationId != nil) {
-//    dispatch_async(dispatch_get_main_queue(), ^{
-//        [Smooch updateConversationById:conversationId withName:title description:description iconUrl:nil metadata:nil completionHandler:^(NSError * _Nullable error, NSDictionary * _Nullable userInfo) {
-//            if (error) {
-//                reject(
-//                   userInfo[SKTErrorCodeIdentifier],
-//                   userInfo[SKTErrorDescriptionIdentifier],
-//                   error);
-//            }
-//            else {
-//                resolve(userInfo);
-//            }
-//        }];
-//    });
-//  }
-//};
-
 
 @end
