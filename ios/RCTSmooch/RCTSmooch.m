@@ -85,9 +85,7 @@
 
 - (void)conversation:(SKTConversation *)conversation willShowViewController:(UIViewController *)viewController {
     if (viewController != nil && conversationTitle != nil && conversationDescription != nil) {
-        //  [[Smooch conversation] sendMessage:[[SKTMessage alloc] initWithText:@"willShowViewController!"]];
         UINavigationItem *navigationItem = viewController.navigationItem;
-        // NSString *fullTitle = [NSString stringWithFormat:@"%@ (%@)", conversationTitle, conversationDescription];
         UIStackView *titleView = [[UIStackView alloc] init];
         titleView.axis = UILayoutConstraintAxisVertical;
 
@@ -335,8 +333,6 @@ RCT_EXPORT_METHOD(setNotificationCategory:(RCTPromiseResolveBlock)resolve
 };
 RCT_EXPORT_METHOD(setUserProperties:(NSDictionary*)options) {
   NSLog(@"Smooch setUserProperties with %@", options);
-
-    // [[SKTUser currentUser] addProperties:options];
     [[SKTUser currentUser] addMetadata:options];
 };
 
@@ -518,8 +514,6 @@ RCT_EXPORT_METHOD(getMessages:(RCTPromiseResolveBlock)resolve
   for (id message in messages) {
       if (message != nil) {
           NSMutableDictionary *newMessage = [[NSMutableDictionary alloc] init];
-          // newMessage[@"name"] = [message name]; // displayName
-          // newMessage[@"text"] = [message text];
           NSDate *msgDate = [message date];
           NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
           [formatter setDateFormat: @"yyyy-MM-dd'T'HH:mm:ss"];
@@ -599,7 +593,6 @@ RCT_EXPORT_METHOD(getIncomeMessages:(RCTPromiseResolveBlock)resolve
           NSDictionary *options = [message metadata];
           if (options != nil) {
             if (options[@"short_property_code"] != nil) {
-              // newMessage[@"chat_type"] = @"property";
               newMessage[@"short_property_code"] = options[@"short_property_code"];
               if (options[@"location_display_name"] != nil) {
                 newMessage[@"location_display_name"] = options[@"location_display_name"];
