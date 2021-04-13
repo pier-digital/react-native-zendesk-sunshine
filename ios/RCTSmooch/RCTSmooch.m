@@ -320,11 +320,12 @@ RCT_EXPORT_METHOD(setNotificationCategory:(RCTPromiseResolveBlock)resolve
         dispatch_async(dispatch_get_main_queue(), ^{
             if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_9_x_Max) {
                 [[UNUserNotificationCenter currentNotificationCenter] setNotificationCategories:[Smooch userNotificationCategories]];
+                [[UIApplication sharedApplication] registerForRemoteNotifications];
             } else {
                 UIUserNotificationSettings* settings = [UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeBadge | UIUserNotificationTypeSound | UIUserNotificationTypeAlert) categories:[Smooch userNotificationCategories]];
                 [[UIApplication sharedApplication] registerUserNotificationSettings:settings];
             }
-            [[UIApplication sharedApplication] registerForRemoteNotifications];
+
             NSLog(@"Smooch setNotificationCategory categories");
             resolve(NULL);
         });
