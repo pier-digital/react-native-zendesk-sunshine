@@ -449,6 +449,13 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
             Log.d("Notification ERROR", String.valueOf(e));
         }
     }
+    @ReactMethod
+    public void isLoggedIn(final Promise promise) {
+        User currentUser = User.getCurrentUser();
+        String externalId = currentUser.getExternalId();
+        Boolean loginStatus = externalId != null;
+        promise.resolve(loginStatus);
+    }
     private Map<String, Object> getProperties(ReadableMap properties) {
         ReadableMapKeySetIterator iterator = properties.keySetIterator();
         Map<String, Object> props = new HashMap<>();

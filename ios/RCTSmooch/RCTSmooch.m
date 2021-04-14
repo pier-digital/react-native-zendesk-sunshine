@@ -261,6 +261,7 @@ RCT_EXPORT_METHOD(login:(NSString*)externalId jwt:(NSString*)jwt resolver:(RCTPr
                  error);
           }
           else {
+              NSLog(@"Success Login");
               MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
               [myconversation setControllerState:self];
               [myconversation setGlobalUserId:externalId];
@@ -729,4 +730,11 @@ RCT_EXPORT_METHOD(setFirebaseCloudMessagingToken:(NSString*)token) {
     [Smooch setPushToken:(tokenData)];
 };
 
+RCT_EXPORT_METHOD(isLoggedIn:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+  NSLog(@"Smooch isLoggedIn");
+  NSString *externalId = [SKTUser currentUser].externalId;
+  BOOL isLogged = externalId != nil;
+  resolve(@(isLogged));
+};
 @end
