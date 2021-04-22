@@ -53,8 +53,8 @@
 - (BOOL)conversation:(SKTConversation *)conversation shouldShowInAppNotificationForMessage:(SKTMessage *)message {
     NSDictionary *meta = message.metadata;
     NSLog(@"Smooch shouldShowInAppNotificationForMessage with %@", meta);
-    // just return true and dont save anything
-    return true;
+    // just return YES and dont save anything
+    return YES;
 }
 
 - (BOOL)conversation:(SKTConversation *)conversation shouldShowForAction:(SKTAction)action withInfo:(nullable NSDictionary *)info {
@@ -80,7 +80,7 @@
         }
     }
 
-    return true;
+    return YES;
 }
 
 - (void)conversation:(SKTConversation *)conversation willShowViewController:(UIViewController *)viewController {
@@ -105,7 +105,7 @@
         [titleView addArrangedSubview:subtitleLabel];
         [titleView sizeToFit];
 
-        [navigationItem setLeftBarButtonItems:nil animated:NO];
+        // [navigationItem setLeftBarButtonItems:nil animated:NO];
         [navigationItem setTitleView:titleView ];
     }
 }
@@ -137,6 +137,16 @@
 - (NSDictionary *)getMetadata {
     NSLog(@"Smooch getMetadata");
     return metadata;
+}
+
+- (void)setEmail:(NSString *)iEmail {
+    NSLog(@"Smooch setEmail");
+    email = iEmail;
+}
+
+- (NSString *)getEmail {
+    NSLog(@"Smooch getEmail");
+    return email;
 }
 
 - (NSString *)getGlobalUserId {
@@ -204,11 +214,11 @@ RCT_EXPORT_MODULE();
 
 - (BOOL)isInteger:(NSString *)toCheck {
   if([toCheck intValue] != 0) {
-    return true;
+    return YES;
   } else if([toCheck isEqualToString:@"0"]) {
-    return true;
+    return YES;
   } else {
-    return false;
+    return NO;
   }
 }
 
@@ -271,7 +281,7 @@ RCT_EXPORT_METHOD(login:(NSString*)externalId jwt:(NSString*)jwt resolver:(RCTPr
   });
 
   // set timeout of 10 seconds and return NULL
-  dispatch_time_t time =  dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15.0 * NSEC_PER_SEC));
+  dispatch_time_t time =  dispatch_time(DISPATCH_TIME_NOW, (int64_t)(30.0 * NSEC_PER_SEC));
   dispatch_after(time, dispatch_get_main_queue(), ^{
         if (!done) {
           done = YES;
@@ -335,7 +345,8 @@ RCT_EXPORT_METHOD(setNotificationCategory:(RCTPromiseResolveBlock)resolve
 };
 RCT_EXPORT_METHOD(setUserProperties:(NSDictionary*)options) {
   NSLog(@"Smooch setUserProperties with %@", options);
-    [[SKTUser currentUser] addMetadata:options];
+    // [[SKTUser currentUser] addMetadata:options];
+    [[SKTUser currentUser] addProperties:options];
 };
 
 RCT_EXPORT_METHOD(getUserId:(RCTPromiseResolveBlock)resolve
@@ -544,7 +555,8 @@ RCT_EXPORT_METHOD(getMessages:(RCTPromiseResolveBlock)resolve
                     }
                 }
                 if (newMessage[@"location_display_name"] == nil) {
-                    newMessage[@"location_display_name"] = [message displayName]; // displayName
+                    // newMessage[@"location_display_name"] = [message displayName]; // V8
+                    newMessage[@"location_display_name"] = [message name];
                 }
               }
           }
@@ -599,7 +611,8 @@ RCT_EXPORT_METHOD(getIncomeMessages:(RCTPromiseResolveBlock)resolve
               if (options[@"location_display_name"] != nil) {
                 newMessage[@"location_display_name"] = options[@"location_display_name"];
               } else {
-                newMessage[@"location_display_name"] = [message displayName]; // displayName
+                // newMessage[@"location_display_name"] = [message displayName]; // V8
+                newMessage[@"location_display_name"] = [message name];
               }
             } // chat_type of employee and employee_name is not real anymore
           }
@@ -623,7 +636,8 @@ RCT_EXPORT_METHOD(getMessagesMetadata:(NSDictionary *)metadata resolver:(RCTProm
       NSDictionary *options = [message metadata];
       if ([options[@"short_property_code"] isEqualToString:metadata[@"short_property_code"]]) {
           NSMutableDictionary *newMessage = [[NSMutableDictionary alloc] init];
-          newMessage[@"name"] = [message displayName]; // displayName
+          newMessage[@"name"] = [message name];
+          // newMessage[@"name"] = [message displayName]; // V8
           newMessage[@"text"] = [message text];
           newMessage[@"isFromCurrentUser"] = @([message isFromCurrentUser]);
           newMessage[@"messageId"] = [message messageId];
@@ -633,7 +647,8 @@ RCT_EXPORT_METHOD(getMessagesMetadata:(NSDictionary *)metadata resolver:(RCTProm
               if (options[@"location_display_name"] != nil) {
                 newMessage[@"location_display_name"] = options[@"location_display_name"];
               } else {
-                newMessage[@"location_display_name"] = [message displayName];  // displayName
+                // newMessage[@"location_display_name"] = [message displayName]; // V8
+                newMessage[@"location_display_name"] = [message name];
               }
           }
           NSString *msgId = [message messageId];
@@ -679,6 +694,8 @@ RCT_EXPORT_METHOD(setEmail:(NSString*)email) {
   NSLog(@"Smooch setEmail");
 
   [SKTUser currentUser].email = email;
+  MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
+  [myconversation setEmail:email];
 };
 
 RCT_EXPORT_METHOD(setSignedUpAt:(NSDate*)date) {
@@ -732,9 +749,13 @@ RCT_EXPORT_METHOD(setFirebaseCloudMessagingToken:(NSString*)token) {
 
 RCT_EXPORT_METHOD(isLoggedIn:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
-  NSLog(@"Smooch isLoggedIn");
-  NSString *externalId = [SKTUser currentUser].externalId;
+  
+  // NSString *externalId = [SKTUser currentUser].externalId;
+  NSString *externalId = [SKTUser currentUser].userId;
   BOOL isLogged = externalId != nil;
+  NSLog(@"Smooch isLoggedIn %@", @(isLogged));
+  MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
+  [myconversation setGlobalUserId:externalId];
   resolve(@(isLogged));
 };
 @end

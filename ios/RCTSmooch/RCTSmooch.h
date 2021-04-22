@@ -18,6 +18,7 @@
 @interface MyConversationDelegate : NSObject <SKTConversationDelegate> {
     NSDictionary *metadata;
     NSString *globalUserId;
+    NSString *email;
     NSString *someProperty;
     NSString *conversationTitle;
     NSString *conversationDescription;
@@ -28,6 +29,7 @@
 }
 @property (nonatomic, retain) NSString *someProperty;
 + (id)sharedManager;
+- (NSString *)getEmail;
 - (void)setMetadata:(NSDictionary *)options;
 - (void)setTitle:(NSString *)title description:(NSString *)description;
 @end

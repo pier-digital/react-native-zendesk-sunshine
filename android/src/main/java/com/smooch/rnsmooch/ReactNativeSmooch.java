@@ -59,11 +59,19 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
     private ReadableMap globalMetadata = null;
     private Boolean sendHideEvent = false;
     private Boolean messageSentEvent = false;
-	private String globalUserId = null;
 
     @Override
     public String getName() {
         return "SmoochManager";
+    }
+
+    public String getExternalId() {
+        User currentUser = User.getCurrentUser();
+        if (currentUser != null) {
+            return currentUser.getExternalId();
+        } else {
+            return null;
+        }
     }
 
     public ReactNativeSmooch(ReactApplicationContext reactContext) {
@@ -81,6 +89,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void login(final String userId, final String jwt, final Promise promise) {
+
         Smooch.login(userId, jwt, new SmoochCallback<LoginResult>() {
             @Override
             public void run(Response<LoginResult> response) {
@@ -91,7 +100,6 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                 }
                 setMessageDelegate();
                 setConversationDelegate();
-				globalUserId = userId;
                 promise.resolve(null);
               }
             }
@@ -117,7 +125,6 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                     promise.reject("" + response.getStatus(), response.getError());
                     return;
                 }
-				globalUserId = null;
                 promise.resolve(null);
             }
         });
@@ -159,7 +166,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                     long days = (now.getTime() - msgDate.getTime())/(24*60*60*1000);
                     if (days < 120) {
                         if (!message.isFromCurrentUser()) {
-						    String localMsgId = globalUserId == null ? msgId : globalUserId.concat(msgId);
+						    String localMsgId = getExternalId() == null ? msgId : getExternalId().concat(msgId);
                             Boolean isRead = sharedPreferences.getBoolean(localMsgId, false);
                             if (!isRead) {
                                 map.put(msgId, false);
@@ -206,7 +213,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                         map.put(name, 0);
                     }
 					if (!message.isFromCurrentUser()) {
-					    String localMsgId = globalUserId == null ? msgId : globalUserId.concat(msgId);
+					    String localMsgId = getExternalId() == null ? msgId : getExternalId().concat(msgId);
 	                    Boolean isRead = sharedPreferences.getBoolean(localMsgId, false);
 	                    if (!isRead) {
 	                        totalUnreadCount += 1;
@@ -293,7 +300,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                 if (message.isFromCurrentUser()) {
                     map.putBoolean("is_read", true);
                 } else if (msgId != null) {
-				    String localMsgId = globalUserId == null ? msgId : globalUserId.concat(msgId);
+				    String localMsgId = getExternalId() == null ? msgId : getExternalId().concat(msgId);
                     Boolean isRead = sharedPreferences.getBoolean(localMsgId, false);
                     map.putBoolean("is_read", isRead);
                 } else {
@@ -321,7 +328,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                 String msgId = message.getId();
                 if (msgId != null) {
                     map.putString("id", msgId); // example: 5fbdc1a608b132000c691500
-					String localMsgId = globalUserId == null ? msgId : globalUserId.concat(msgId);
+					String localMsgId = getExternalId() == null ? msgId : getExternalId().concat(msgId);
                     Boolean isRead = sharedPreferences.getBoolean(localMsgId, false);
                     map.putBoolean("is_read", isRead);
                 } else {
@@ -366,7 +373,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                 if (message.isFromCurrentUser()) {
                     map.putBoolean("isRead", true);
                 } else if (msgId != null) {
-				    String localMsgId = globalUserId == null ? msgId : globalUserId.concat(msgId);
+				    String localMsgId = getExternalId() == null ? msgId : getExternalId().concat(msgId);
                     Boolean isRead = sharedPreferences.getBoolean(localMsgId, false);
                     map.putBoolean("isRead", isRead);
                 } else {
@@ -398,7 +405,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getReactApplicationContext());
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
-		String localMsgId = globalUserId == null ? msgId : globalUserId.concat(msgId);
+		String localMsgId = getExternalId() == null ? msgId : getExternalId().concat(msgId);
         editor.putBoolean(localMsgId, true);
         editor.apply();
     }
@@ -406,6 +413,8 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
     @ReactMethod
     public void setMetadata(final ReadableMap metadata) {
         this.globalMetadata = metadata;
+        setMessageDelegate();
+        setConversationDelegate();
     }
 
     @ReactMethod
@@ -449,11 +458,10 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
             Log.d("Notification ERROR", String.valueOf(e));
         }
     }
+
     @ReactMethod
     public void isLoggedIn(final Promise promise) {
-        User currentUser = User.getCurrentUser();
-        String externalId = currentUser.getExternalId();
-        Boolean loginStatus = externalId != null;
+        Boolean loginStatus = getExternalId() != null;
         promise.resolve(loginStatus);
     }
     private Map<String, Object> getProperties(ReadableMap properties) {
@@ -495,7 +503,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                 if (globalMetadata != null && message != null && message.getMetadata() != null && message.getMetadata().get("short_property_code").equals(getProperties(globalMetadata).get("short_property_code"))) {
                     String msgId = message.getId();
                     if (msgId != null) {
-					    String localMsgId = globalUserId == null ? msgId : globalUserId.concat(msgId);
+					    String localMsgId = getExternalId() == null ? msgId : getExternalId().concat(msgId);
                         Boolean isRead = sharedPreferences.getBoolean(localMsgId, false);
                         if (!isRead) {
                             SharedPreferences.Editor editor = sharedPreferences.edit();
