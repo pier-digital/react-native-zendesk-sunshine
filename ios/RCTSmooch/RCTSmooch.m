@@ -10,6 +10,7 @@
 @interface SmoochManager()
 - (void)sendEvent;
 - (void)sendMessageSentEvent;
+- (void)sendUnreadCountUpdate;
 @end
 
 @implementation MyConversationDelegate
@@ -50,10 +51,20 @@
     return nil;
 }
 
+- (BOOL)hideIdSendUnreadCountUpdate {
+    NSLog(@"Smooch hideIdSendUnreadCountUpdate");
+    if (sendHideEvent) {
+      [hideId sendUnreadCountUpdate];
+    }
+    return YES;
+}
 - (BOOL)conversation:(SKTConversation *)conversation shouldShowInAppNotificationForMessage:(SKTMessage *)message {
-    NSDictionary *meta = message.metadata;
-    NSLog(@"Smooch shouldShowInAppNotificationForMessage with %@", meta);
+    NSDictionary *metadata = message.metadata;
+    NSLog(@"Smooch shouldShowInAppNotificationForMessage with %@", metadata);
     // just return YES and dont save anything
+    if (sendHideEvent) {
+      [hideId sendUnreadCountUpdate];
+    }
     return YES;
 }
 
@@ -238,6 +249,10 @@ RCT_EXPORT_MODULE();
     NSLog(@"sendMessageSentEvent");
     [self sendEventWithName:@"messageSent" body:@{@"name":@""}];
 }
+- (void)sendUnreadCountUpdate {
+    NSLog(@"sendUnreadCountUpdate");
+    [self sendEventWithName:@"unreadCountUpdate" body:@{@"name":@""}];
+}
 
 RCT_EXPORT_METHOD(show) {
   NSLog(@"Smooch Show");
@@ -347,6 +362,11 @@ RCT_EXPORT_METHOD(setUserProperties:(NSDictionary*)options) {
   NSLog(@"Smooch setUserProperties with %@", options);
     // [[SKTUser currentUser] addMetadata:options];
     [[SKTUser currentUser] addProperties:options];
+};
+RCT_EXPORT_METHOD(resetLogin) {
+  NSLog(@"Smooch resetLogin");
+  MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
+  [myconversation setControllerState:self];
 };
 
 RCT_EXPORT_METHOD(getUserId:(RCTPromiseResolveBlock)resolve
@@ -708,6 +728,7 @@ RCT_EXPORT_METHOD(setSendHideEvent:(BOOL)hideEvent) {
   NSLog(@"Smooch setSendHideEvent");
   MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
   [myconversation setSendHideEvent:hideEvent];
+
 };
 
 RCT_EXPORT_METHOD(setMessageSentEvent:(BOOL)isSet) {
