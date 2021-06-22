@@ -32,4 +32,5 @@
 - (NSString *)getEmail;
 - (void)setMetadata:(NSDictionary *)options;
 - (void)setTitle:(NSString *)title description:(NSString *)description;
+- (BOOL)hideIdSendUnreadCountUpdate;
 @end
