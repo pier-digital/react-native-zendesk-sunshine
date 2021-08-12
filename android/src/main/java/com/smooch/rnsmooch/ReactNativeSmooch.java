@@ -131,6 +131,11 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void resetLogin() {
+        Log.d("Smooch", "resetLogin empty function");
+    }
+
+    @ReactMethod
     public void show() {
         ConversationActivity.builder().withFlags(Intent.FLAG_ACTIVITY_NEW_TASK).show(getReactApplicationContext());
         // v8 ConversationActivity.show(getReactApplicationContext(), Intent.FLAG_ACTIVITY_NEW_TASK);
