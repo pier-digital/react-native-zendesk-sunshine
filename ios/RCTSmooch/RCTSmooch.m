@@ -40,7 +40,7 @@
             NSString *localMsgId = globalUserId == nil ? msgId : [NSString stringWithFormat:@"%@%@", globalUserId, msgId];
             BOOL isRead = [db boolForKey:localMsgId]; // return NO if not exists
             if (!isRead) {
-              [db setBool:@(YES) forKey:localMsgId];
+              [db setBool:YES forKey:localMsgId];
               [db synchronize];
             }
         }
@@ -743,7 +743,7 @@ RCT_EXPORT_METHOD(setRead:(NSString *)msgId) {
   NSString *globalUserId = [myconversation getGlobalUserId];
   NSUserDefaults *db = [NSUserDefaults standardUserDefaults];
   NSString *localMsgId = globalUserId == nil ? msgId : [NSString stringWithFormat:@"%@%@", globalUserId, msgId];
-  [db setBool:@(YES) forKey:localMsgId];
+  [db setBool:YES forKey:localMsgId];
   [db synchronize];
 };
 
