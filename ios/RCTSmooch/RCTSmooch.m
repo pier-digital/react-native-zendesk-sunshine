@@ -117,7 +117,7 @@
         [titleView sizeToFit];
 
         // [navigationItem setLeftBarButtonItems:nil animated:NO];
-        [navigationItem setTitleView:titleView ];
+        // [navigationItem setTitleView:titleView ];
     }
 }
 
@@ -360,8 +360,8 @@ RCT_EXPORT_METHOD(setNotificationCategory:(RCTPromiseResolveBlock)resolve
 };
 RCT_EXPORT_METHOD(setUserProperties:(NSDictionary*)options) {
   NSLog(@"Smooch setUserProperties with %@", options);
-    // [[SKTUser currentUser] addMetadata:options];
-    [[SKTUser currentUser] addProperties:options];
+    [[SKTUser currentUser] addMetadata:options];
+    // [[SKTUser currentUser] addProperties:options]; v7
 };
 RCT_EXPORT_METHOD(resetLogin) {
   NSLog(@"Smooch resetLogin");
@@ -575,8 +575,8 @@ RCT_EXPORT_METHOD(getMessages:(RCTPromiseResolveBlock)resolve
                     }
                 }
                 if (newMessage[@"location_display_name"] == nil) {
-                    // newMessage[@"location_display_name"] = [message displayName]; // V8
-                    newMessage[@"location_display_name"] = [message name];
+                    newMessage[@"location_display_name"] = [message displayName]; // V8
+                    // newMessage[@"location_display_name"] = [message name]; v7
                 }
               }
           }
@@ -631,8 +631,8 @@ RCT_EXPORT_METHOD(getIncomeMessages:(RCTPromiseResolveBlock)resolve
               if (options[@"location_display_name"] != nil) {
                 newMessage[@"location_display_name"] = options[@"location_display_name"];
               } else {
-                // newMessage[@"location_display_name"] = [message displayName]; // V8
-                newMessage[@"location_display_name"] = [message name];
+                newMessage[@"location_display_name"] = [message displayName]; // V8
+                // newMessage[@"location_display_name"] = [message name]; v7
               }
             } // chat_type of employee and employee_name is not real anymore
           }
@@ -656,8 +656,8 @@ RCT_EXPORT_METHOD(getMessagesMetadata:(NSDictionary *)metadata resolver:(RCTProm
       NSDictionary *options = [message metadata];
       if ([options[@"short_property_code"] isEqualToString:metadata[@"short_property_code"]]) {
           NSMutableDictionary *newMessage = [[NSMutableDictionary alloc] init];
-          newMessage[@"name"] = [message name];
-          // newMessage[@"name"] = [message displayName]; // V8
+          // newMessage[@"name"] = [message name]; v7
+          newMessage[@"name"] = [message displayName]; // V8
           newMessage[@"text"] = [message text];
           newMessage[@"isFromCurrentUser"] = @([message isFromCurrentUser]);
           newMessage[@"messageId"] = [message messageId];
@@ -667,8 +667,8 @@ RCT_EXPORT_METHOD(getMessagesMetadata:(NSDictionary *)metadata resolver:(RCTProm
               if (options[@"location_display_name"] != nil) {
                 newMessage[@"location_display_name"] = options[@"location_display_name"];
               } else {
-                // newMessage[@"location_display_name"] = [message displayName]; // V8
-                newMessage[@"location_display_name"] = [message name];
+                newMessage[@"location_display_name"] = [message displayName]; // V8
+                // newMessage[@"location_display_name"] = [message name]; v7
               }
           }
           NSString *msgId = [message messageId];

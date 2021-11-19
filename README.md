@@ -1,11 +1,11 @@
 # react-native-smooch
 React Native wrapper for Smooch.io. Based off of [smooch-cordova](https://github.com/smooch/smooch-cordova)
 
-This React Native module was built and tested with version 0.63.4 of React Native. Since React Native is not mature yet, there might be some breaking changes which will break our module. Therefore, if you find a problem, please open an issue.
+This React Native module was built and tested with version 0.66.3 of React Native. Since React Native is not mature yet, there might be some breaking changes which will break our module. Therefore, if you find a problem, please open an issue.
 
  ```
-    "react": "16.13.1",
-    "react-native": "^0.63.4",
+    "react": "17.0.2,
+    "react-native": "^0.66.3",
  ```
 
 At the moment, this wrapper only covers the most commonly used features of the Smooch SDK. We encourage you to add to this wrapper or make any feature requests you need. Pull requests most definitely welcome!
@@ -23,7 +23,7 @@ For React Native 0.60+ you do not need to add anything - it autolinks!
 
  ```javascript
   "dependencies": {
-    "@billnbell/react-native-smooch": "git+https://github.com/billnbell/react-native-sunshine-conversations.git#v1.0.4",
+    "@billnbell/react-native-smooch": "git+https://github.com/billnbell/react-native-sunshine-conversations.git#v1.0.37",
     ...
   }
  ```
@@ -35,7 +35,7 @@ yarn install
 
 ## IOS
 
- * This uses Smooch IOS SDK v7.1.2
+ * This uses Smooch IOS SDK v10.1.1
 
  * You must also have your React dependencies defined in your Podfile as described [here](http://facebook.github.io/react-native/releases/0.31/docs/troubleshooting.html#missing-libraries-for-react), for example:
 
@@ -50,7 +50,8 @@ yarn install
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Initialize Smooch - these instructions are also available on [app.smooch.io](https://app.smooch.io)
-    [Smooch initWithSettings:[SKTSettings settingsWithAppId:@"YOUR_APP_ID"] completionHandler:^(NSError * _Nullable error, NSDictionary * _Nullable userInfo) {
+    SKTSettings *customSettings = [SKTSettings settingsWithIntegrationId:@"YOUR_IOS_INT_ID"];
+    [Smooch initWithSettings:customSettings completionHandler:^(NSError * _Nullable error, NSDictionary * _Nullable userInfo) {
         NSLog(@"Smooch initWithSettings");
         // Your code after init is complete
     }];
@@ -61,7 +62,7 @@ You're now ready to start interacting with Smooch in your React Native app.
 
 ## Android
 
- * this uses Smooch Android SDK v8.0.0
+ * this uses Smooch Android SDK v8.0.0+
 
  * You can easily add a binding to the [Smooch Android SDK](https://github.com/smooch/smooch-android) in your React Native application by following the instructions below.
 
@@ -79,11 +80,12 @@ public class MainApplication extends Application implements ReactApplication {
     public void onCreate() {
       super.onCreate();
       SoLoader.init(this, /* native exopackage */ false);
-      Smooch.init(this, new Settings("YOUR_APP_ID"), new SmoochCallback<InitializationStatus>() {
+      String integrationId = (BuildConfig.APP_ENV == "PROD") ? BuildConfig.PROD_SMOOCH_INTEGRATION_ID_ANDROID : BuildConfig.STAGE_SMOOCH_INTEGRATION_ID_ANDROID;
+      Smooch.init(this, new Settings(integrationId), new SmoochCallback<InitializationStatus>() {
         @Override
         public void run(Response<InitializationStatus> response) {
-            // Handle init result
-            Log.d("SmoothInit", String.valueOf(response));
+          // Handle init result
+          Log.d("SmoothInit", String.valueOf(response));
         }
       });
       initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
