@@ -17,7 +17,7 @@ Installing Smooch on React Native
 
 First, make sure you've [signed up for Smooch](https://app.smooch.io/signup)
 
-If you don't already have a React Native application setup, follow the instructions [here](https://facebook.github.io/react-native/docs/getting-started.html) to create one. Make sure you use 0.63.3+.
+If you don't already have a React Native application setup, follow the instructions [here](https://facebook.github.io/react-native/docs/getting-started.html) to create one. Make sure you use 0.66.3+.
 
 For React Native 0.60+ you do not need to add anything - it autolinks!
 
