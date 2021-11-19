@@ -101,7 +101,7 @@ Using Smooch in your React Native App
 
 ### Require the module
 ```javascript
-import { Smooch } from '@billnbell/react-native-smooch';
+import { Smooch } from 'react-native-smooch';
 ```
 ### To set metadata
 ```javascript
@@ -180,41 +180,58 @@ Smooch.setUserProperties({"whenDidYouFsckUp": "aLongTimeAgo"});
 
 ### s.d.ts (typescript)
 ```javascript
-declare module '@billnbell/react-native-smooch' {
+declare module 'react-native-smooch' {
+  class Smooch {
     login(smoochUserId: string, smoochJwt: string): Promise<void>;
     logout(): Promise<void>;
+    setNotificationCategory(): Promise<void>;
     setFirstName(firstName: string): void;
     setLastName(lastName: string): void;
     setEmail(email: string): void;
     setMetadata(metadata: object): void;
     setRead(msgId: string): void;
-    updateConversation(title: string, description: string | null): Promise<void>;
+    updateConversation(
+      title: string,
+      description: string | null,
+    ): Promise<void>;
     getMessages(): Promise<IMessage[]>;
+    getPushNotificationInfo(): Promise<any>;
+    clearPushNotificationInfo(): Promise<any>;
     getIncomeMessages(): Promise<IMessage[]>;
     getMessagesMetadata(metadata: object): Promise<[]>;
     getGroupCounts(): Promise<[]>;
+    getGroupCountsIds(): Promise<IGroupIds[]>;
     show(): void;
+    close(): void;
+    resetLogin(): void;
     setSendHideEvent(hideFlag: boolean): void;
+    setMessageSentEvent(isOn: boolean): void;
     getUnreadCount(): Promise<number>;
+    triggerNotification(incomeMessage: object): void;
+    setFirebaseCloudMessagingToken(token: string): void;
+    isLoggedIn(): Promise<boolean>;
   }
-
   const s = new Smooch();
   class SmoochManagerEmitter {
     addListener(name: string, any): any;
     remove(): void;
   }
   const t = new SmoochManagerEmitter();
-  export { s as Smooch, t as SmoochManagerEmitter};
-  export type IMessage  = {
-    id: string,
-    location_display_name: string,
-    short_property_code: string,
-    is_read: boolean,
-    date: string,
-    date_string: string,
-    is_from_current_user: boolean,
-  }
+  export { s as Smooch, t as SmoochManagerEmitter };
+  export type IGroupIds = {
+    msgId: string;
+    isRead: boolean;
+  };
 
+  export type IMessage = {
+    id: string;
+    is_from_current_user: boolean;
+    location_display_name: string;
+    short_property_code: string;
+    is_read: boolean;
+    date: string;
+    date_string: string;
+  };
 }
 ```
 
