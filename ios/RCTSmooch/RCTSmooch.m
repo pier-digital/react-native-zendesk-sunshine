@@ -97,26 +97,26 @@
 - (void)conversation:(SKTConversation *)conversation willShowViewController:(UIViewController *)viewController {
     if (viewController != nil && conversationTitle != nil && conversationDescription != nil) {
         UINavigationItem *navigationItem = viewController.navigationItem;
-        UIStackView *titleView = [[UIStackView alloc] init];
-        titleView.axis = UILayoutConstraintAxisVertical;
+//        UIStackView *titleView = [[UIStackView alloc] init];
+//        titleView.axis = UILayoutConstraintAxisVertical;
 
-        UILabel *titleLabel = [[UILabel alloc] init];
-        titleLabel.textAlignment = NSTextAlignmentCenter;
-        titleLabel.font = [UIFont systemFontOfSize:20];
-        titleLabel.textColor = UIColor.darkGrayColor;
-        titleLabel.text = conversationTitle;
+//        UILabel *titleLabel = [[UILabel alloc] init];
+//        titleLabel.textAlignment = NSTextAlignmentLeft;
+//        titleLabel.font = [UIFont systemFontOfSize:18];
+//        titleLabel.textColor = UIColor.blackColor;
+//        titleLabel.text = conversationTitle;
 
-        UILabel *subtitleLabel = [[UILabel alloc] init];
-        subtitleLabel.textAlignment = NSTextAlignmentCenter;
-        subtitleLabel.font = [UIFont systemFontOfSize:13];
-        subtitleLabel.textColor = UIColor.darkGrayColor;
-        subtitleLabel.text = conversationDescription;
+//        UILabel *subtitleLabel = [[UILabel alloc] init];
+//        subtitleLabel.textAlignment = NSTextAlignmentLeft;
+//        subtitleLabel.font = [UIFont systemFontOfSize:13];
+//        subtitleLabel.textColor = UIColor.lightGrayColor;
+//        subtitleLabel.text = conversationDescription;
 
-        [titleView addArrangedSubview:titleLabel];
-        [titleView addArrangedSubview:subtitleLabel];
-        [titleView sizeToFit];
-
-        // [navigationItem setLeftBarButtonItems:nil animated:NO];
+//        [titleView addArrangedSubview:titleLabel];
+//        [titleView addArrangedSubview:subtitleLabel];
+//        [titleView sizeToFit];
+        [navigationItem setTitle:conversationDescription];
+        [navigationItem setLeftBarButtonItems:nil animated:NO];
         // [navigationItem setTitleView:titleView ];
     }
 }
@@ -406,8 +406,9 @@ RCT_EXPORT_METHOD(getGroupCounts:(RCTPromiseResolveBlock)resolve
           if (options != nil) {
               NSString *name = options[@"short_property_code"];
               NSString *msgId = [message messageId];
-              if (msgId != nil) {
+              if (msgId != nil && name != nil) {
                   NSDate *msgDate = [message date];
+                  if (msgDate != nil) {
                   int lengthInDays = [self daysBetween:msgDate and:now];
                   if (lengthInDays < 120) {
                   if (newMessage[name] == nil) {
@@ -420,6 +421,7 @@ RCT_EXPORT_METHOD(getGroupCounts:(RCTPromiseResolveBlock)resolve
                         totalUnreadCount += 1;
                         NSNumber *count = newMessage[name];
                         newMessage[name] = [NSNumber numberWithInt:[count intValue] + 1];
+                        }
                     }
                   }
                 }

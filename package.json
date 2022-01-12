@@ -1,6 +1,6 @@
 {
   "name": "react-native-smooch",
-  "version": "1.0.37",
+  "version": "1.0.38",
   "description": "A React Native client for smooch.io",
   "main": "./lib/SmoochClient.js",
   "repository": {

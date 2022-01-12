@@ -200,6 +200,12 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void addListener(String eventName) {
+    }
+    @ReactMethod
+    public void removeListeners(Integer count) {
+    }
+    @ReactMethod
     public void getGroupCounts(final Promise promise) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getReactApplicationContext());
         Integer totalUnreadCount = 0;
