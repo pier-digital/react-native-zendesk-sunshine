@@ -5,7 +5,7 @@ This React Native module was built and tested with version 0.66.3 of React Nativ
 
  ```
     "react": "17.0.2,
-    "react-native": "^0.66.3",
+    "react-native": "^0.66.4",
  ```
 
 At the moment, this wrapper only covers the most commonly used features of the Smooch SDK. We encourage you to add to this wrapper or make any feature requests you need. Pull requests most definitely welcome!
@@ -23,7 +23,7 @@ For React Native 0.60+ you do not need to add anything - it autolinks!
 
  ```javascript
   "dependencies": {
-    "@billnbell/react-native-smooch": "git+https://github.com/billnbell/react-native-sunshine-conversations.git#v1.0.37",
+    "react-native-smooch": "git+https://github.com/billnbell/react-native-sunshine-conversations.git#1.0.38",
     ...
   }
  ```
@@ -35,7 +35,7 @@ yarn install
 
 ## IOS
 
- * This uses Smooch IOS SDK v10.1.1
+ * This uses Smooch IOS SDK v10.1.2
 
  * You must also have your React dependencies defined in your Podfile as described [here](http://facebook.github.io/react-native/releases/0.31/docs/troubleshooting.html#missing-libraries-for-react), for example:
 
