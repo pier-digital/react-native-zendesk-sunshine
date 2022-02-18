@@ -164,7 +164,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
         List<Message> messages = Smooch.getConversation().getMessages();
         Map<String, Boolean> map = new HashMap();
         for (Message message : messages) {
-            if (message.getMetadata() != null) {
+            if (message != null && message.getMetadata() != null) {
                 String msgId = message.getId();
                 if (msgId != null) {
                     Date msgDate = message.getDate();
@@ -213,7 +213,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
         List<Message> messages = Smooch.getConversation().getMessages();
         Map<String, Integer> map = new HashMap();
         for (Message message : messages) {
-            if (message.getMetadata() != null) {
+            if (message != null && message.getMetadata() != null) {
                 String name = (String) message.getMetadata().get("short_property_code");
                 String msgId = message.getId();
                 if (msgId != null) {
@@ -282,7 +282,8 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                 map.putString("date", df2.format(message.getDate()));
                 map.putBoolean("is_from_current_user", message.isFromCurrentUser()); // map.putBoolean
                 map.putString("id", message.getId());
-                if (message.getMetadata() != null) {
+                if (message.getMetadata() != null &&
+                    message.getMetadata().get("short_property_code") != null) {
                     map.putString("short_property_code", (String) message.getMetadata().get("short_property_code"));
                     if (message.getMetadata().get("location_display_name") != null) {
                         map.putString("location_display_name", (String) message.getMetadata().get("location_display_name"));
@@ -291,7 +292,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                     } else {
                         boolean setDisplay = false;
                         for (Message message2 : messages) {
-                            if (message2.getMetadata() != null) {
+                            if (message2.getMetadata() != null && message2.getMetadata().get("short_property_code") != null) {
                                 if (message.getMetadata().get("short_property_code").equals(message2.getMetadata().get("short_property_code"))) {
                                     if (message2.getMetadata().get("location_display_name") != null) {
                                         map.putString("location_display_name", (String) message2.getMetadata().get("location_display_name"));
@@ -370,13 +371,19 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
         WritableArray promiseArray = Arguments.createArray();
 
         for (Message message : messages) {
-            if (message != null && message.getMetadata() != null && message.getMetadata().get("short_property_code").equals(getProperties(metadata).get("short_property_code"))) {
+            if (metadata != null &&
+                getProperties(metadata) != null &&
+                getProperties(metadata).get("short_property_code") != null &&
+                message != null && message.getMetadata() != null &&
+                message.getMetadata().get("short_property_code") != null &&
+                message.getMetadata().get("short_property_code").equals(getProperties(metadata).get("short_property_code"))) {
                 WritableMap map = Arguments.createMap();
                 map.putString("name", message.getName());
                 map.putString("text", message.getText());
                 map.putBoolean("isFromCurrentUser", message.isFromCurrentUser());
                 map.putString("messageId", message.getId());
-                if (message.getMetadata() != null) {
+                if (message.getMetadata() != null && message.getMetadata().get("short_property_code") != null
+                    && message.getMetadata().get("location_display_name") != null) {
                     map.putString("short_property_code", (String) message.getMetadata().get("short_property_code"));
                     map.putString("location_display_name", (String) message.getMetadata().get("location_display_name"));
                 }
@@ -497,7 +504,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
         Smooch.setMessageModifierDelegate(new MessageModifierDelegate() {
             @Override
             public Message beforeSend(ConversationDetails conversationDetails, Message message) {
-                if (globalMetadata != null) {
+                if (globalMetadata != null && getProperties(globalMetadata) != null) {
                     Log.d("Smooch", String.valueOf(globalMetadata));
                     message.setMetadata(getProperties(globalMetadata));
                 }
@@ -511,7 +518,12 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
             @Override
             public Message beforeDisplay(ConversationDetails conversationDetails, Message message) {
                 SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getReactApplicationContext());
-                if (globalMetadata != null && message != null && message.getMetadata() != null && message.getMetadata().get("short_property_code").equals(getProperties(globalMetadata).get("short_property_code"))) {
+                if (globalMetadata != null &&
+                    getProperties(globalMetadata) != null &&
+                    getProperties(globalMetadata).get("short_property_code") != null &&
+                    message != null && message.getMetadata() != null &&
+                    message.getMetadata().get("short_property_code") != null &&
+                    message.getMetadata().get("short_property_code").equals(getProperties(globalMetadata).get("short_property_code"))) {
                     String msgId = message.getId();
                     if (msgId != null) {
 					    String localMsgId = getExternalId() == null ? msgId : getExternalId().concat(msgId);
@@ -531,19 +543,22 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
             public Message beforeNotification(String s, Message message) {
 
                 WritableMap params = Arguments.createMap();
-                if (message.getMetadata() == null) {
+                if (message == null || message.getMetadata() == null) {
                     return null;
                 }
-                String code = (String) message.getMetadata().get("short_property_code");
-                params.putString("short_property_code", code);
-                String name = (String) message.getMetadata().get("location_display_name");
-                params.putString("location_display_name", name);
+                if (message.getMetadata().get("short_property_code") != null &&
+                    message.getMetadata().get("location_display_name") != null) {
+                    String code = (String) message.getMetadata().get("short_property_code");
+                    params.putString("short_property_code", code);
+                    String name = (String) message.getMetadata().get("location_display_name");
+                    params.putString("location_display_name", name);
 
-                setMetadata(params);
-                updateConversation("Conversation", name, null);
-                if (sendHideEvent) {
-                    Log.d("onUnreadCountUpdate", "on beforeNotification");
-                    sendEvent(mreactContext, "unreadCountUpdate", null);
+                    setMetadata(params);
+                    updateConversation("Conversation", name, null);
+                    if (sendHideEvent) {
+                        Log.d("onUnreadCountUpdate", "on beforeNotification");
+                        sendEvent(mreactContext, "unreadCountUpdate", null);
+                    }
                 }
 
                 return message;
