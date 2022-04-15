@@ -141,6 +141,11 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void setUserProperties(final ReadableMap metadata) {
+        User.getCurrentUser().addMetadata(getProperties(metadata));
+    }
+
+    @ReactMethod
     public void setFirebaseCloudMessagingToken(String fcmToken) {
         Smooch.setFirebaseCloudMessagingToken(fcmToken);
     }
