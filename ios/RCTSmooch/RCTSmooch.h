@@ -14,23 +14,3 @@
 
 @interface SmoochManager : RCTEventEmitter <RCTBridgeModule>
 @end
-
-@interface MyConversationDelegate : NSObject <SKTConversationDelegate> {
-    NSDictionary *metadata;
-    NSString *globalUserId;
-    NSString *email;
-    NSString *someProperty;
-    NSString *conversationTitle;
-    NSString *conversationDescription;
-    BOOL hideConversation;
-    BOOL sendHideEvent;
-    BOOL sendMessageSentEvent;
-    id hideId;
-}
-@property (nonatomic, retain) NSString *someProperty;
-+ (id)sharedManager;
-- (NSString *)getEmail;
-- (void)setMetadata:(NSDictionary *)options;
-- (void)setTitle:(NSString *)title description:(NSString *)description;
-- (BOOL)hideIdSendUnreadCountUpdate;
-@end

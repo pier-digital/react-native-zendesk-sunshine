@@ -103,14 +103,6 @@ Using Smooch in your React Native App
 ```javascript
 import { Smooch } from 'react-native-smooch';
 ```
-### To set metadata
-```javascript
-const metadata = {
-  short_property_code: chatGroupId,
-  property_name: chatGroupName,
-};
-Smooch.setMetadata(metadata);
-```
 
 ### Show the conversation screen
 ```javascript
@@ -140,40 +132,12 @@ Smooch.setLastName("Osiander");
 Smooch.setEmail("kurt@ralphgraciesf.com");
 ```
 
-### Turn on events and addListener in React Native
-```javascript
-Smooch.setSendHideEvent(true);
-const subscription = SmoochManagerEmitter
-  .addListener('unreadCountUpdate', () => updateUnreadCounts());
-
-Later remove it
-  subscription.remove();
-```
-
-### To set Title and Description in Conversation Header
-```javascript
-Smooch.updateConversation('Conversation', label)
-  .then(() => {
-    console.log('set the header!');
-  });
-```
-
 ### Set the user's sign up date -- not tested
 ```javascript
 Smooch.setSignedUpAt((new Date).getTime());
 ```
 
-### This module uses internal DB in IOS and Android to keep track of messages read.
-```javascript
-Smooch.setRead(msgId);
-getMessages().then(() => { console.log('got messages') });
-to only get those with metadata headers:
-getMessagesMetadata(metadata).then(() => { console.log('got messages') });
-to get metadata groups  - must have metadata - returns only unread messages and unique short_property_code
-getGroupCounts().then(() => { console.log('got messages') });
-```
-
-### Associate key/value pairs with the user -- not tested
+### Associate key/value pairs with the user
 ```javascript
 Smooch.setUserProperties({"whenDidYouFsckUp": "aLongTimeAgo"});
 ```
@@ -188,50 +152,15 @@ declare module 'react-native-smooch' {
     setFirstName(firstName: string): void;
     setLastName(lastName: string): void;
     setEmail(email: string): void;
-    setMetadata(metadata: object): void;
-    setRead(msgId: string): void;
-    updateConversation(
-      title: string,
-      description: string | null,
-    ): Promise<void>;
-    getMessages(): Promise<IMessage[]>;
-    getPushNotificationInfo(): Promise<any>;
-    clearPushNotificationInfo(): Promise<any>;
-    getIncomeMessages(): Promise<IMessage[]>;
-    getMessagesMetadata(metadata: object): Promise<[]>;
-    getGroupCounts(): Promise<[]>;
-    getGroupCountsIds(): Promise<IGroupIds[]>;
     show(): void;
     close(): void;
-    resetLogin(): void;
-    setSendHideEvent(hideFlag: boolean): void;
-    setMessageSentEvent(isOn: boolean): void;
     getUnreadCount(): Promise<number>;
     triggerNotification(incomeMessage: object): void;
     setFirebaseCloudMessagingToken(token: string): void;
     isLoggedIn(): Promise<boolean>;
   }
   const s = new Smooch();
-  class SmoochManagerEmitter {
-    addListener(name: string, any): any;
-    remove(): void;
-  }
-  const t = new SmoochManagerEmitter();
-  export { s as Smooch, t as SmoochManagerEmitter };
-  export type IGroupIds = {
-    msgId: string;
-    isRead: boolean;
-  };
-
-  export type IMessage = {
-    id: string;
-    is_from_current_user: boolean;
-    location_display_name: string;
-    short_property_code: string;
-    is_read: boolean;
-    date: string;
-    date_string: string;
-  };
+  export { s as Smooch };
 }
 ```
 
