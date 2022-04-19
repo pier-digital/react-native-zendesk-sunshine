@@ -146,16 +146,16 @@ Smooch.setUserProperties({"whenDidYouFsckUp": "aLongTimeAgo"});
 ```javascript
 declare module 'react-native-smooch' {
   class Smooch {
-    login(smoochUserId: string, smoochJwt: string): Promise<void>;
+    login(externalId: string, jwt: string): Promise<void>;
     logout(): Promise<void>;
     setNotificationCategory(): Promise<void>;
     setFirstName(firstName: string): void;
     setLastName(lastName: string): void;
     setEmail(email: string): void;
+    setUserProperties(props: Map<string, object>): void;
     show(): void;
     close(): void;
     getUnreadCount(): Promise<number>;
-    triggerNotification(incomeMessage: object): void;
     setFirebaseCloudMessagingToken(token: string): void;
     isLoggedIn(): Promise<boolean>;
   }

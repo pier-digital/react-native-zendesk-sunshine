@@ -1,17 +1,11 @@
 package com.smooch.rnsmooch;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.icu.util.Calendar;
-import java.util.TimeZone;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -20,29 +14,19 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.bridge.Promise;
-import com.facebook.react.bridge.WritableArray;
-import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import io.smooch.core.CardSummary;
 import io.smooch.core.InitializationStatus;
-import io.smooch.core.MessageAction;
-import io.smooch.core.MessageUploadStatus;
 import io.smooch.core.Smooch;
 import io.smooch.core.SmoochCallback;
-import io.smooch.core.SmoochConnectionStatus;
 import io.smooch.core.User;
 import io.smooch.ui.ConversationActivity;
 import io.smooch.core.Message;
 import io.smooch.core.Conversation;
-import io.smooch.core.ConversationDetails;
 import io.smooch.core.LogoutResult;
 import io.smooch.core.LoginResult;
-import io.smooch.core.FcmService;
-import static io.smooch.core.FcmService.*;
 
 public class ReactNativeSmooch extends ReactContextBaseJavaModule {
 
@@ -139,22 +123,6 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
     @ReactMethod
     public void setFirebaseCloudMessagingToken(String fcmToken) {
         Smooch.setFirebaseCloudMessagingToken(fcmToken);
-    }
-    
-    @ReactMethod
-    public void triggerNotification(ReadableMap remoteMessage) {
-        try {
-            HashMap<String, Object> map = remoteMessage.toHashMap();
-            HashMap<String, String> newMap = new HashMap<String, String>();
-            for (Map.Entry<String, Object> entry : map.entrySet()) {
-                if (entry.getValue() instanceof String) {
-                    newMap.put(entry.getKey(), entry.getValue().toString());
-                }
-            }
-            triggerSmoochNotification(newMap, mreactContext);
-        } catch (Exception e) {
-            Log.d("Notification ERROR", String.valueOf(e));
-        }
     }
 
     @ReactMethod
