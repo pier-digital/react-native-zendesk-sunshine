@@ -11,6 +11,11 @@
 
 RCT_EXPORT_MODULE();
 
+- (NSArray<NSString *> *)supportedEvents
+{
+  return @[];
+}
+
 RCT_EXPORT_METHOD(show) {
   NSLog(@"Smooch Show");
 
