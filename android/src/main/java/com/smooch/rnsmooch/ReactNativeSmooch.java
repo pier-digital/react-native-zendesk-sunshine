@@ -84,6 +84,12 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void setNotificationCategory(final Promise promise) {
+        // Do nothing! Method specific to iOS. 
+        promise.resolve(null);
+    }
+
+    @ReactMethod
     public void show() {
         ConversationActivity.builder().withFlags(Intent.FLAG_ACTIVITY_NEW_TASK).show(getReactApplicationContext());
         // v8 ConversationActivity.show(getReactApplicationContext(), Intent.FLAG_ACTIVITY_NEW_TASK);
