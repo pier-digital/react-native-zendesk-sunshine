@@ -1,5 +1,7 @@
-# react-native-smooch
-React Native wrapper for Smooch.io. Based off of [smooch-cordova](https://github.com/smooch/smooch-cordova)
+# react-native-zendesk-sunshine
+React Native wrapper for Zendesk Sunshine Conversations (aka Smooch).
+
+Disclaimer: This project is a improvement and a hardening of William Bell's version (https://github.com/billnbell/react-native-sunshine-conversations) to use at Pier Digital.
 
 This React Native module was built and tested with version 0.66.3 of React Native. Since React Native is not mature yet, there might be some breaking changes which will break our module. Therefore, if you find a problem, please open an issue.
 
@@ -23,7 +25,7 @@ For React Native 0.60+ you do not need to add anything - it autolinks!
 
  ```javascript
   "dependencies": {
-    "react-native-smooch": "git+https://github.com/billnbell/react-native-sunshine-conversations.git#1.0.38",
+    "react-native-zendesk-sunshine": "git+https://github.com/pier-digital/react-native-zendesk-sunshine.git#1.0.39",
     ...
   }
  ```
@@ -62,7 +64,7 @@ You're now ready to start interacting with Smooch in your React Native app.
 
 ## Android
 
- * this uses Smooch Android SDK v8.0.0+
+ * this uses Smooch Android SDK v9.0.0+
 
  * You can easily add a binding to the [Smooch Android SDK](https://github.com/smooch/smooch-android) in your React Native application by following the instructions below.
 
@@ -101,7 +103,7 @@ Using Smooch in your React Native App
 
 ### Require the module
 ```javascript
-import { Smooch } from 'react-native-smooch';
+import { Smooch } from 'react-native-zendesk-sunshine';
 ```
 
 ### Show the conversation screen
@@ -144,7 +146,7 @@ Smooch.setUserProperties({"whenDidYouFsckUp": "aLongTimeAgo"});
 
 ### s.d.ts (typescript)
 ```javascript
-declare module 'react-native-smooch' {
+declare module 'react-native-zendesk-sunshine' {
   class Smooch {
     login(externalId: string, jwt: string): Promise<void>;
     logout(): Promise<void>;

@@ -1,16 +1,16 @@
 {
-  "name": "react-native-smooch",
+  "name": "react-native-zendesk-sunshine",
   "version": "1.0.39",
-  "description": "A React Native client for smooch.io",
+  "description": "A React Native client Zendesk Sunshine Conversarions (aka Smooch)",
   "main": "./lib/SmoochClient.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/smooch/react-native-smooch.git"
+    "url": "https://github.com/pier-digital/react-native-zendesk-sunshine.git"
   },
-  "author": "Mike Gozzo with updates from William Bell",
+  "author": "Mike Gozzo with updates from William Bell and Cirillo Ferreira",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/smooch/react-native-smooch/issues"
+    "url": "https://github.com/pier-digital/react-native-zendesk-sunshine/issues"
   },
   "homepage": "https://smooch.io/is"
 }
