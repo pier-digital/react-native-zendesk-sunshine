@@ -17,10 +17,18 @@ import com.facebook.react.bridge.Promise;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
+import io.smooch.core.CardSummary;
+import io.smooch.core.ConversationDelegate;
+import io.smooch.core.ConversationEvent;
 import io.smooch.core.InitializationStatus;
+import io.smooch.core.MessageAction;
+import io.smooch.core.MessageUploadStatus;
+import io.smooch.core.PaymentStatus;
 import io.smooch.core.Smooch;
 import io.smooch.core.SmoochCallback;
+import io.smooch.core.SmoochConnectionStatus;
 import io.smooch.core.User;
 import io.smooch.ui.ConversationActivity;
 import io.smooch.core.Message;
@@ -53,7 +61,6 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void login(final String externalId, final String jwt, final Promise promise) {
-
         Smooch.login(externalId, jwt, new SmoochCallback<LoginResult>() {
             @Override
             public void run(Response<LoginResult> response) {
@@ -63,6 +70,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                     return;
                 }
                 
+                setConversationDelegate();
                 promise.resolve(null);
               }
             }
@@ -135,6 +143,85 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
     public void isLoggedIn(final Promise promise) {
         Boolean loginStatus = getExternalId() != null;
         promise.resolve(loginStatus);
+    }
+
+    private void setConversationDelegate() {
+        Smooch.setConversationDelegate(new ConversationDelegate() {
+            @Override
+            public void onMessagesReceived(@NonNull Conversation conversation, @NonNull List<Message> list) {
+            }
+
+            @Override
+            public void onMessagesReset(@NonNull Conversation conversation, @NonNull List<Message> list) {
+            }
+
+            @Override
+            public void onUnreadCountChanged(@NonNull Conversation conversation, int i) {
+            }
+
+            @Override
+            public void onMessageSent(@NonNull Message message, @NonNull MessageUploadStatus messageUploadStatus) {
+            }
+
+            @Override
+            public void onConversationEventReceived(@NonNull ConversationEvent conversationEvent) {
+            }
+
+            @Override
+            public void onInitializationStatusChanged(@NonNull InitializationStatus initializationStatus) {
+            }
+
+            @Override
+            public void onLoginComplete(@NonNull LoginResult loginResult) {
+            }
+
+            @Override
+            public void onLogoutComplete(@NonNull LogoutResult logoutResult) {
+            }
+
+            @Override
+            public void onPaymentProcessed(@NonNull MessageAction messageAction, @NonNull PaymentStatus paymentStatus) {
+            }
+
+            @Override
+            public boolean shouldTriggerAction(@NonNull MessageAction messageAction) {
+                return true;
+            }
+
+            @Override
+            public void onCardSummaryLoaded(@NonNull CardSummary cardSummary) {
+            }
+
+            @Override
+            public void onSmoochConnectionStatusChanged(@NonNull SmoochConnectionStatus smoochConnectionStatus) {
+            }
+
+            @Override
+            public void onSmoochShown() {
+                // Force Zendesk to initialize the bot.
+                Smooch.getConversationsList(new SmoochCallback<List<Conversation>>() {
+                    @Override
+                    public void run(Response<List<Conversation>> response) {
+                        if (response.getError() != null) {
+                            return;
+                        }
+
+                        List<Conversation> conversations = response.getData();
+                        if (conversations == null || conversations.isEmpty()) {
+                            Smooch.createConversation("", "", null, null, null, null, null);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onSmoochHidden() {
+            }
+
+            @Override
+            public void onConversationsListUpdated(@NonNull List<Conversation> list) {
+            }
+        });
     }
     
     private Map<String, Object> getProperties(ReadableMap properties) {
