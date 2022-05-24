@@ -14,3 +14,8 @@
 
 @interface SmoochManager : RCTEventEmitter <RCTBridgeModule>
 @end
+
+@interface MyConversationDelegate : NSObject <SKTConversationDelegate>
+{
+}
+@end

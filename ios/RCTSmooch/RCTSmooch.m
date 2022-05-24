@@ -4,7 +4,38 @@
 #import <Smooch/SKTMessage.h>
 #import <Smooch/SKTConversation.h>
 
+@interface MyConversationDelegate()
+@end
+
 @interface SmoochManager()
+@end
+
+@implementation MyConversationDelegate
+- (void)conversation:(SKTConversation *)conversation willShowViewController:(UIViewController *)viewController
+{
+  [Smooch getConversations: ^(NSError *_Nullable error, NSArray *_Nullable conversations) {
+    if (conversations == nil || [conversations count] == 0) {
+      [Smooch createConversationWithName: nil 
+            description:nil iconUrl:nil avatarUrl:nil metadata:nil message:nil completionHandler: nil];
+    }
+  }];
+}
+
+- (void)setControllerState {
+    if ([Smooch conversation] != nil) {
+        [Smooch conversation].delegate = self;
+    }
+}
+
++ (id)sharedManager {
+    static MyConversationDelegate *sharedMyManager = nil;
+    @synchronized(self) {
+        if (sharedMyManager == nil) {
+            sharedMyManager = [[self alloc] init];
+        }
+    }
+    return sharedMyManager;
+}
 @end
 
 @implementation SmoochManager
@@ -49,6 +80,10 @@ RCT_EXPORT_METHOD(login:(NSString*)externalId jwt:(NSString*)jwt resolver:(RCTPr
           }
           else {
               NSLog(@"Success Login");
+
+              MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
+              [myconversation setControllerState];
+
               resolve(userInfo);
           }
       }];
