@@ -18,9 +18,11 @@ import com.facebook.react.bridge.Promise;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
+import java.util.Arrays;
 
 import io.smooch.core.CardSummary;
 import io.smooch.core.ConversationDelegate;
+import io.smooch.core.MessageModifierDelegate;
 import io.smooch.core.ConversationEvent;
 import io.smooch.core.InitializationStatus;
 import io.smooch.core.MessageAction;
@@ -33,12 +35,15 @@ import io.smooch.core.User;
 import io.smooch.ui.ConversationActivity;
 import io.smooch.core.Message;
 import io.smooch.core.Conversation;
+import io.smooch.core.ConversationDetails;
 import io.smooch.core.LogoutResult;
 import io.smooch.core.LoginResult;
 
 public class ReactNativeSmooch extends ReactContextBaseJavaModule {
 
     private ReactApplicationContext mreactContext;
+
+    private static final String TriggerMessageText = "[PROACTIVE_TRIGGER]";
 
     @Override
     public String getName() {
@@ -57,6 +62,9 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
     public ReactNativeSmooch(ReactApplicationContext reactContext) {
         super(reactContext);
         mreactContext = reactContext;
+
+        setMessageDelegate();
+        setConversationDelegate();
     }
 
     @ReactMethod
@@ -70,7 +78,6 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
                     return;
                 }
                 
-                setConversationDelegate();
                 promise.resolve(null);
               }
             }
@@ -145,6 +152,30 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
         promise.resolve(loginStatus);
     }
 
+    private void setMessageDelegate() {
+        Smooch.setMessageModifierDelegate(new MessageModifierDelegate() {
+            @Override
+            public Message beforeSend(ConversationDetails conversationDetails, Message message) {
+                return message;
+            }
+
+            @Override
+            public Message beforeDisplay(ConversationDetails conversationDetails, Message message) {
+                // TODO: The method getMetadata is still not working. 
+                // So we check the text.
+                if (message != null && TriggerMessageText.equals(message.getText())) 
+                    return null;
+
+                return message;
+            }
+
+            @Override
+            public Message beforeNotification(String s, Message message) {
+                return message;
+            }
+        });
+    }
+
     private void setConversationDelegate() {
         Smooch.setConversationDelegate(new ConversationDelegate() {
             @Override
@@ -208,7 +239,12 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
 
                         List<Conversation> conversations = response.getData();
                         if (conversations == null || conversations.isEmpty()) {
-                            Smooch.createConversation("", "", null, null, null, null, null);
+                            Map<String, Object> metadata = new HashMap<String, Object>();
+                            metadata.put("isHidden", true);
+                            
+                            List<Message> messages = Arrays.asList(new Message(TriggerMessageText, "", metadata));
+
+                            Smooch.createConversation("", "", null, null, messages, null, null);
                         }
                     }
                 });
