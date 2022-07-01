@@ -15,8 +15,8 @@
 {
   [Smooch getConversations: ^(NSError *_Nullable error, NSArray *_Nullable conversations) {
     if (conversations == nil || [conversations count] == 0) {
-      [Smooch createConversationWithName: nil 
-            description:nil iconUrl:nil avatarUrl:nil metadata:nil message:nil completionHandler: nil];
+      [Smooch createConversationWithName: "displayName1" 
+            description: "description1" iconUrl:nil avatarUrl:nil metadata:nil message:"olá" completionHandler: nil];
     }
   }];
 }
