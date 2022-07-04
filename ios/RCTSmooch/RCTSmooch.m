@@ -10,6 +10,8 @@
 @interface SmoochManager()
 @end
 
+NSString *TriggerMessageText = @"PROACTIVE_TRIGGER";
+
 @implementation MyConversationDelegate
 - (void)conversation:(SKTConversation *)conversation willShowViewController:(UIViewController *)viewController
 {
