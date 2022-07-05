@@ -10,15 +10,26 @@
 @interface SmoochManager()
 @end
 
+NSString *TriggerMessageText = @"PROACTIVE_TRIGGER";
+
 @implementation MyConversationDelegate
 - (void)conversation:(SKTConversation *)conversation willShowViewController:(UIViewController *)viewController
 {
   [Smooch getConversations: ^(NSError *_Nullable error, NSArray *_Nullable conversations) {
+    NSDictionary *msgMetadata = @{@"isHidden": @YES};
+    NSArray<SKTMessage *> *proactiveTriggerMessage = @[[[SKTMessage alloc] initWithText:TriggerMessageText payload:@"" metadata:msgMetadata]];
     if (conversations == nil || [conversations count] == 0) {
-      [Smooch createConversationWithName: nil 
-            description:nil iconUrl:nil avatarUrl:nil metadata:nil message:nil completionHandler: nil];
+    [Smooch createConversationWithName: nil
+                            description: nil iconUrl:nil avatarUrl:nil metadata: nil message:proactiveTriggerMessage completionHandler: nil];
     }
   }];
+}
+
+- (nullable SKTMessage *)conversation:(SKTConversation *)conversation willDisplayMessage:(SKTMessage *)message{
+    if(message != nil && [message.text isEqualToString:TriggerMessageText]){
+        return nil;
+    }
+    return message;
 }
 
 - (void)setControllerState {
