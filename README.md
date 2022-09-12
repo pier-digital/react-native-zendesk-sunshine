@@ -155,7 +155,7 @@ declare module 'react-native-zendesk-sunshine' {
     setLastName(lastName: string): void;
     setEmail(email: string): void;
     setUserProperties(props: Map<string, object>): void;
-    show(): void;
+    show(enableMultiConversation: boolean): void;
     close(): void;
     getUnreadCount(): Promise<number>;
     setFirebaseCloudMessagingToken(token: string): void;
