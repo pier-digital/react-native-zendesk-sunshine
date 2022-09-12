@@ -38,6 +38,7 @@ import io.smooch.core.Conversation;
 import io.smooch.core.ConversationDetails;
 import io.smooch.core.LogoutResult;
 import io.smooch.core.LoginResult;
+import io.smooch.features.conversationlist.ConversationListActivity;
 
 public class ReactNativeSmooch extends ReactContextBaseJavaModule {
 
@@ -105,9 +106,28 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void show() {
-        ConversationActivity.builder().withFlags(Intent.FLAG_ACTIVITY_NEW_TASK).show(getReactApplicationContext());
-        // v8 ConversationActivity.show(getReactApplicationContext(), Intent.FLAG_ACTIVITY_NEW_TASK);
+    public void show(boolean enableMultiConversation) {
+        Smooch.getConversationsList(new SmoochCallback<List<Conversation>>() {
+            @Override
+            public void run(Response<List<Conversation>> response) {
+                if (response.getError() != null) {
+                    return;
+                }
+
+                List<Conversation> conversations = response.getData();
+                if (!enableMultiConversation || conversations == null || conversations.isEmpty()) {
+                    ConversationActivity.builder()
+                        .withFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        .show(getReactApplicationContext());
+                }
+                else
+                {
+                    ConversationListActivity.builder()
+                        .withFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        .show(getReactApplicationContext());
+                }
+            }
+        });
     }
 
     @ReactMethod
