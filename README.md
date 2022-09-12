@@ -37,7 +37,7 @@ yarn install
 
 ## IOS
 
- * This uses Smooch IOS SDK v10.1.2
+ * This uses Smooch IOS SDK v10.1.3
 
  * You must also have your React dependencies defined in your Podfile as described [here](http://facebook.github.io/react-native/releases/0.31/docs/troubleshooting.html#missing-libraries-for-react), for example:
 

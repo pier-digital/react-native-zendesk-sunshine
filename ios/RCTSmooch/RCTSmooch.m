@@ -19,8 +19,8 @@ NSString *TriggerMessageText = @"PROACTIVE_TRIGGER";
     NSDictionary *msgMetadata = @{@"isHidden": @YES};
     NSArray<SKTMessage *> *proactiveTriggerMessage = @[[[SKTMessage alloc] initWithText:TriggerMessageText payload:@"" metadata:msgMetadata]];
     if (conversations == nil || [conversations count] == 0) {
-    [Smooch createConversationWithName: nil
-                            description: nil iconUrl:nil avatarUrl:nil metadata: nil message:proactiveTriggerMessage completionHandler: nil];
+      [Smooch createConversationWithName: nil
+                             description: nil iconUrl:nil avatarUrl:nil metadata: nil message:proactiveTriggerMessage completionHandler: nil];
     }
   }];
 }
@@ -58,11 +58,17 @@ RCT_EXPORT_MODULE();
   return @[];
 }
 
-RCT_EXPORT_METHOD(show) {
+RCT_EXPORT_METHOD(show:(BOOL)enableMultiConversation) {
   NSLog(@"Smooch Show");
 
   dispatch_async(dispatch_get_main_queue(), ^{
-    [Smooch show];
+    [Smooch getConversations: ^(NSError *_Nullable error, NSArray *_Nullable conversations) {
+      if (!enableMultiConversation || conversations == nil || [conversations count] == 0) {
+        [Smooch show];
+      } else {
+        [Smooch showConversationList];
+      }
+    }];
   });
 };
 
