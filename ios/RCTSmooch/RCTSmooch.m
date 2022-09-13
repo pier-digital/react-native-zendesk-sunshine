@@ -13,29 +13,25 @@
 NSString *TriggerMessageText = @"PROACTIVE_TRIGGER";
 
 @implementation MyConversationDelegate
-- (void)conversation:(SKTConversation *)conversation willShowViewController:(UIViewController *)viewController
-{
-  [Smooch getConversations: ^(NSError *_Nullable error, NSArray *_Nullable conversations) {
-    NSDictionary *msgMetadata = @{@"isHidden": @YES};
-    NSArray<SKTMessage *> *proactiveTriggerMessage = @[[[SKTMessage alloc] initWithText:TriggerMessageText payload:@"" metadata:msgMetadata]];
-    if (conversations == nil || [conversations count] == 0) {
-      [Smooch createConversationWithName: nil
-                             description: nil iconUrl:nil avatarUrl:nil metadata: nil message:proactiveTriggerMessage completionHandler: nil];
+- (void)conversation:(SKTConversation *)conversation willShowViewController:(UIViewController *)viewController {
+  if (conversation == nil || [conversation messageCount] == 0) {
+    NSDictionary *metadata = @{@"isHidden": @YES};
+    SKTMessage *message = [[SKTMessage alloc] initWithText:TriggerMessageText payload:@"" metadata:metadata];
+    
+    if (conversation == nil) {
+      [Smooch createConversationWithName:nil
+                             description:nil iconUrl:nil avatarUrl:nil metadata:nil message:@[message] completionHandler:nil];
+    } else {
+      [conversation sendMessage:message];
     }
-  }];
+  };
 }
 
-- (nullable SKTMessage *)conversation:(SKTConversation *)conversation willDisplayMessage:(SKTMessage *)message{
+- (nullable SKTMessage *)conversation:(SKTConversation *)conversation willDisplayMessage:(SKTMessage *)message {
     if(message != nil && [message.text isEqualToString:TriggerMessageText]){
         return nil;
     }
     return message;
-}
-
-- (void)setControllerState {
-    if ([Smooch conversation] != nil) {
-        [Smooch conversation].delegate = self;
-    }
 }
 
 + (id)sharedManager {
@@ -60,6 +56,9 @@ RCT_EXPORT_MODULE();
 
 RCT_EXPORT_METHOD(show:(BOOL)enableMultiConversation) {
   NSLog(@"Smooch Show");
+
+  MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
+  [Smooch setConversationDelegate:myconversation];
 
   dispatch_async(dispatch_get_main_queue(), ^{
     [Smooch getConversations: ^(NSError *_Nullable error, NSArray *_Nullable conversations) {
@@ -97,10 +96,6 @@ RCT_EXPORT_METHOD(login:(NSString*)externalId jwt:(NSString*)jwt resolver:(RCTPr
           }
           else {
               NSLog(@"Success Login");
-
-              MyConversationDelegate *myconversation = [MyConversationDelegate sharedManager];
-              [myconversation setControllerState];
-
               resolve(userInfo);
           }
       }];
