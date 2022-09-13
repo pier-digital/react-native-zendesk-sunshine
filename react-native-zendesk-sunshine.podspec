@@ -13,6 +13,6 @@ Pod::Spec.new do |s|
   s.source       = { :git => "https://github.com/pier-digital/react-native-zendesk-sunshine" }
   s.source_files = 'ios/**/*.{h,m}'
   s.platform     = :ios, "10.0"
-  s.dependency 'Smooch', '~> 10.1.3'
+  s.dependency 'Smooch', '~> 11.0.0'
   s.dependency 'React'
 end
