@@ -160,6 +160,10 @@ declare module 'react-native-zendesk-sunshine' {
     getUnreadCount(): Promise<number>;
     setFirebaseCloudMessagingToken(token: string): void;
     isLoggedIn(): Promise<boolean>;
+    sendMessage(text: string, metadata: Map<string, object>, 
+      conversationId: string, conversationName: string): Promise<void>;
+    sendHiddenMessage(metadata: Map<string, object>, 
+      conversationId: string, conversationName: string): Promise<void>;
   }
   const s = new Smooch();
   export { s as Smooch };
