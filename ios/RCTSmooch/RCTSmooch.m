@@ -10,7 +10,8 @@
 @interface SmoochManager()
 @end
 
-NSString *TriggerMessageText = @"PROACTIVE_TRIGGER";
+NSString *TriggerMessageText = @"[PROACTIVE_TRIGGER]";
+NSString *OldTriggerMessageText = @"PROACTIVE_TRIGGER";
 
 @implementation MyConversationDelegate
 - (void)conversation:(SKTConversation *)conversation willShowViewController:(UIViewController *)viewController {
@@ -28,7 +29,8 @@ NSString *TriggerMessageText = @"PROACTIVE_TRIGGER";
 }
 
 - (nullable SKTMessage *)conversation:(SKTConversation *)conversation willDisplayMessage:(SKTMessage *)message {
-    if(message != nil && [message.text isEqualToString:TriggerMessageText]){
+    if (message != nil 
+      && ([message.text isEqualToString:TriggerMessageText] || [message.text isEqualToString:OldTriggerMessageText])){
         return nil;
     }
     return message;
@@ -243,7 +245,7 @@ RCT_EXPORT_METHOD(sendMessage:(NSString*)messageText messageMetadata:(NSDictiona
   }];
 };
 
-RCT_EXPORT_METHOD(sendHiddenMessage:(NSString*)messageText messageMetadata:(NSDictionary*)messageMetadata 
+RCT_EXPORT_METHOD(sendHiddenMessage:(NSDictionary*)messageMetadata 
                   conversationId:(NSString*)conversationId conversationName:(NSString*)conversationName 
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
@@ -256,7 +258,7 @@ RCT_EXPORT_METHOD(sendHiddenMessage:(NSString*)messageText messageMetadata:(NSDi
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject {
   [Smooch createConversationWithName:conversationName
-    description:nil iconUrl:nil avatarUrl:nil metadata:nil message:@[message] 
+    description:nil iconUrl:nil avatarUrl:nil metadata:[message metadata] message:@[message] 
     completionHandler:^(NSError * _Nullable error, NSDictionary * _Nullable info) {
       if (error) {
         reject(
