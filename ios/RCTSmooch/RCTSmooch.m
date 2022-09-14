@@ -148,7 +148,7 @@ RCT_EXPORT_METHOD(setNotificationCategory:(RCTPromiseResolveBlock)resolve
             NSLog(@"Smooch setNotificationCategory not granted");
             resolve(NULL);
         } else {
-        dispatch_async(dispatch_get_main_queue(), ^{
+          dispatch_async(dispatch_get_main_queue(), ^{
             if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_9_x_Max) {
                 [[UNUserNotificationCenter currentNotificationCenter] setNotificationCategories:[Smooch userNotificationCategories]];
                 [[UIApplication sharedApplication] registerForRemoteNotifications];
@@ -159,14 +159,14 @@ RCT_EXPORT_METHOD(setNotificationCategory:(RCTPromiseResolveBlock)resolve
 
             NSLog(@"Smooch setNotificationCategory categories");
             resolve(NULL);
-        });
+          });
         }
     }];
 };
 
-RCT_EXPORT_METHOD(setUserProperties:(NSDictionary*)options) {
-  NSLog(@"Smooch setUserProperties with %@", options);
-    [[SKTUser currentUser] addMetadata:options];
+RCT_EXPORT_METHOD(setUserProperties:(NSDictionary*)metadata) {
+  NSLog(@"Smooch setUserProperties with %@", metadata);
+    [[SKTUser currentUser] addMetadata:metadata];
 };
 
 RCT_REMAP_METHOD(getUnreadCount,
@@ -217,4 +217,57 @@ RCT_EXPORT_METHOD(isLoggedIn:(RCTPromiseResolveBlock)resolve
   NSLog(@"Smooch isLoggedIn %@", @(isLogged));
   resolve(@(isLogged));
 };
+
+RCT_EXPORT_METHOD(sendMessage:(NSString*)messageText messageMetadata:(NSDictionary*)messageMetadata 
+                  conversationId:(NSString*)conversationId conversationName:(NSString*)conversationName 
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+  SKTMessage *message = [[SKTMessage alloc] initWithText:messageText payload:@"" metadata:messageMetadata];
+
+  if (conversationId == nil || [conversationId length] == 0) {
+    [self createConversation:conversationName message:message resolver:resolve rejecter:reject];
+    return;
+  }
+
+  [Smooch conversationById:conversationId completionHandler:^(NSError * _Nullable error, SKTConversation * _Nullable conversation) {
+    if (error) {
+      reject(nil, nil, error);
+    }
+    else if (conversation != nil) {
+      [conversation sendMessage:message];
+      resolve(NULL);
+    }
+    else {
+      [self createConversation:conversationName message:message resolver:resolve rejecter:reject];
+    }
+  }];
+};
+
+RCT_EXPORT_METHOD(sendHiddenMessage:(NSString*)messageText messageMetadata:(NSDictionary*)messageMetadata 
+                  conversationId:(NSString*)conversationId conversationName:(NSString*)conversationName 
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+  [self sendMessage:TriggerMessageText messageMetadata:messageMetadata 
+    conversationId:conversationId conversationName:conversationName
+    resolver:resolve rejecter:reject];
+};
+
+- (void)createConversation:(NSString*)conversationName message:(SKTMessage*)message
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject {
+  [Smooch createConversationWithName:conversationName
+    description:nil iconUrl:nil avatarUrl:nil metadata:nil message:@[message] 
+    completionHandler:^(NSError * _Nullable error, NSDictionary * _Nullable info) {
+      if (error) {
+        reject(
+          info[SKTErrorCodeIdentifier],
+          info[SKTErrorDescriptionIdentifier],
+          error);
+      }
+      else {
+        resolve(NULL);
+      }
+  }];
+};
+
 @end
