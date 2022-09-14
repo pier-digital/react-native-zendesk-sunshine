@@ -6,13 +6,12 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.facebook.react.bridge.JavaOnlyMap;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.ReadableMapKeySetIterator;
-import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.bridge.Promise;
 
 import java.util.HashMap;
@@ -158,7 +157,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void setUserProperties(final ReadableMap metadata) {
-        User.getCurrentUser().addMetadata(getProperties(metadata));
+        User.getCurrentUser().addMetadata(convertMetadata(metadata));
     }
 
     @ReactMethod
@@ -170,6 +169,58 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
     public void isLoggedIn(final Promise promise) {
         Boolean loginStatus = getExternalId() != null;
         promise.resolve(loginStatus);
+    }
+
+    @ReactMethod
+    public void sendMessage(String messageText, final ReadableMap messageMetadata, String conversationId, String conversationName, final Promise promise) {
+        Message message = new Message(messageText, "", convertMetadata(messageMetadata));
+
+        if (conversationId == null || conversationId == "") {
+            createConversation(conversationName, message, promise);
+            return;
+        }
+
+        Smooch.getConversationById(conversationId, new SmoochCallback<Conversation>() {
+            @Override
+            public void run(Response<Conversation> response) {
+                if (response.getError() != null) {
+                    promise.reject("" + response.getStatus(), response.getError());
+                    return;
+                }
+
+                Conversation conversation = response.getData();
+                if (conversation != null) {
+                    conversation.sendMessage(message);
+                    promise.resolve(null);
+                    return;
+                }
+
+                createConversation(conversationName, message, promise);
+            }
+        });
+    }
+
+    @ReactMethod
+    public void sendHiddenMessage(final ReadableMap messageMetadata, String conversationId, String conversationName, final Promise promise) {
+        JavaOnlyMap newMessageMetadata = 
+            (messageMetadata == null) ? new JavaOnlyMap() : JavaOnlyMap.deepClone(messageMetadata);
+        newMessageMetadata.putBoolean("isHidden", true);
+
+        sendMessage(TriggerMessageText, newMessageMetadata, conversationId, conversationName, promise);
+    }
+
+    private void createConversation(String conversationName, final Message message, final Promise promise) {
+        List<Message> messages = Arrays.asList(message);
+        Smooch.createConversation(conversationName, "", null, null, messages, message.getMetadata(), new SmoochCallback<Void>() {
+            @Override
+            public void run(Response<Void> response) {
+                if (response.getError() != null) {
+                    promise.reject("" + response.getStatus(), response.getError());
+                } else {
+                    promise.resolve(null);
+                }
+            }
+        });
     }
 
     private void setMessageDelegate() {
@@ -274,23 +325,8 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
             }
         });
     }
-    
-    private Map<String, Object> getProperties(ReadableMap properties) {
-        ReadableMapKeySetIterator iterator = properties.keySetIterator();
-        Map<String, Object> props = new HashMap<>();
 
-        while (iterator.hasNextKey()) {
-            String key = iterator.nextKey();
-            ReadableType type = properties.getType(key);
-            if (type == ReadableType.Boolean) {
-                props.put(key, properties.getBoolean(key));
-            } else if (type == ReadableType.Number) {
-                props.put(key, properties.getDouble(key));
-            } else if (type == ReadableType.String) {
-                props.put(key, properties.getString(key));
-            }
-        }
-
-        return props;
+    private Map<String, Object> convertMetadata(ReadableMap metadata) {
+        return (metadata == null) ? null : metadata.toHashMap();
     }
 }
