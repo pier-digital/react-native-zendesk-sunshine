@@ -300,20 +300,20 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
 
             @Override
             public void onSmoochShown() {
-                Conversation conversation = Smooch.getConversation();
+                // Conversation conversation = Smooch.getConversation();
                 
-                // Force Zendesk to initialize the bot.
-                if (conversation == null || conversation.getMessages().isEmpty()) {
-                    Map<String, Object> metadata = new HashMap<String, Object>();
-                    metadata.put("isHidden", true);
-                    Message message = new Message(TriggerMessageText, "", metadata);
+                // // Force Zendesk to initialize the bot.
+                // if (conversation == null || conversation.getMessages().isEmpty()) {
+                //     Map<String, Object> metadata = new HashMap<String, Object>();
+                //     metadata.put("isHidden", true);
+                //     Message message = new Message(TriggerMessageText, "", metadata);
 
-                    if (conversation == null) {
-                        Smooch.createConversation("", "", null, null, Arrays.asList(message), null, null);
-                    } else {
-                        conversation.sendMessage(message);
-                    }
-                }
+                //     if (conversation == null) {
+                //         Smooch.createConversation("", "", null, null, Arrays.asList(message), null, null);
+                //     } else {
+                //         conversation.sendMessage(message);
+                //     }
+                // }
             }
 
             @Override
