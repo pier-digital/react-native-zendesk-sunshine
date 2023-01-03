@@ -15,17 +15,17 @@ NSString *OldTriggerMessageText = @"PROACTIVE_TRIGGER";
 
 @implementation MyConversationDelegate
 - (void)conversation:(SKTConversation *)conversation willShowViewController:(UIViewController *)viewController {
-  if (conversation == nil || [conversation messageCount] == 0) {
-    NSDictionary *metadata = @{@"isHidden": @YES};
-    SKTMessage *message = [[SKTMessage alloc] initWithText:TriggerMessageText payload:@"" metadata:metadata];
-    
-    if (conversation == nil) {
-      [Smooch createConversationWithName:nil
-                             description:nil iconUrl:nil avatarUrl:nil metadata:nil message:@[message] completionHandler:nil];
-    } else {
-      [conversation sendMessage:message];
-    }
-  };
+//  if (conversation == nil || [conversation messageCount] == 0) {
+//    NSDictionary *metadata = @{@"isHidden": @YES};
+//    SKTMessage *message = [[SKTMessage alloc] initWithText:TriggerMessageText payload:@"" metadata:metadata];
+//    
+//    if (conversation == nil) {
+//      [Smooch createConversationWithName:nil
+//                             description:nil iconUrl:nil avatarUrl:nil metadata:nil message:@[message] completionHandler:nil];
+//    } else {
+//      [conversation sendMessage:message];
+//    }
+//  };
 }
 
 - (nullable SKTMessage *)conversation:(SKTConversation *)conversation willDisplayMessage:(SKTMessage *)message {
