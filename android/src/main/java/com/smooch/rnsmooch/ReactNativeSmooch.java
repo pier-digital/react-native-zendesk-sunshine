@@ -211,7 +211,7 @@ public class ReactNativeSmooch extends ReactContextBaseJavaModule {
 
     private void createConversation(String conversationName, final Message message, final Promise promise) {
         List<Message> messages = Arrays.asList(message);
-        Smooch.createConversation(conversationName, "", null, null, messages, message.getMetadata(), new SmoochCallback<Void>() {
+        Smooch.createConversation(conversationName, "", null, null, messages, message.getMetadata(), new SmoochCallback<String>() {
             @Override
             public void run(Response<Void> response) {
                 if (response.getError() != null) {
